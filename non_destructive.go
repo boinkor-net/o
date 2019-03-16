@@ -1,7 +1,7 @@
 package o
 
-// All non-destructively returns all indexes, in order, for the given
-// ring accountant.
+// All returns all indexes occupied in the ring buffer in order (from
+// oldest to youngest). It does not modify the ring.
 func All(ring Ring) []uint {
 	r := make([]uint, ring.Size())
 	elt := ring.start()
@@ -12,8 +12,8 @@ func All(ring Ring) []uint {
 	return r
 }
 
-// All non-destructively returns all indexes, in reverse order, for
-// the given ring accountant.
+// Rev returns all indexes occupied in the ring buffer, in reverse
+// order (from youngest to oldest). It does not modify the ring.
 func Rev(ring Ring) []uint {
 	r := make([]uint, ring.Size())
 	elt := ring.start()
@@ -24,10 +24,14 @@ func Rev(ring Ring) []uint {
 	return r
 }
 
+// Start1 returns the index of the first occupied entry in the ring
+// buffer, to aid in iterating over all indexes in the ring.
 func Start1(ring Ring) uint {
 	return ring.start()
 }
 
+// End1 returns the end index of the first loop when iterating over
+// all occupied indexes in the ring buffer. See Start1.
 func End1(ring Ring) uint {
 	cap := ring.capacity()
 	start := ring.start()
@@ -39,6 +43,8 @@ func End1(ring Ring) uint {
 	}
 }
 
+// End2 returns the end index of the second loop when iterating over
+// all occupied indexes in the ring buffer. See Start1.
 func End2(ring Ring) uint {
 	cap := ring.capacity()
 	start := ring.start()
