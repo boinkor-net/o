@@ -13,24 +13,29 @@ import (
 // bytes as are given for the capacity before it has to be drained.
 type Bounded struct {
 	o.Ring
-	buf []byte
+	buf       []byte
+	overwrite bool
 }
 
-func New(cap uint) *Bounded {
+func New(cap uint, overwrite bool) *Bounded {
 	buf := make([]byte, cap)
 	if cap%2 == 0 {
 		r := o.NewPowerOfTwo(uint(bits.Len(cap)))
-		return &Bounded{Ring: r, buf: buf}
+		return &Bounded{Ring: r, buf: buf, overwrite: overwrite}
 	}
-	return &Bounded{Ring: o.NewBasic(cap), buf: buf}
+	return &Bounded{Ring: o.NewBasic(cap), buf: buf, overwrite: overwrite}
 }
 
 func (b *Bounded) Write(p []byte) (n int, err error) {
 	var i uint
 	for n, c := range p {
-		i, err = b.Ring.Push()
-		if err == o.ErrFull {
-			return n, io.ErrShortWrite
+		if b.overwrite {
+			i, err = b.Ring.Push()
+			if err == o.ErrFull {
+				return n, io.ErrShortWrite
+			}
+		} else {
+			i = o.ForcePush(b.Ring)
 		}
 		b.buf[i] = c
 	}

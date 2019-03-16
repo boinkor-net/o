@@ -49,4 +49,9 @@
 // users must protect both the accounting operations and your backing
 // buffer writes with a Mutex.
 //
+// Credit
+//
+// The ring buffer accounting techniques in this package and were
+// translated into go from a post on the blog of Juho Snellman,
+// https://www.snellman.net/blog/archive/2016-12-13-ring-buffers/.
 package o
