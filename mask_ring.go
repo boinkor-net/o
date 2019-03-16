@@ -40,7 +40,7 @@ func (r *maskRing) Shift() (uint, error) {
 	}
 	i := r.read
 	r.read++
-	return i, nil
+	return r.Mask(i), nil
 }
 
 func (r *maskRing) Size() uint {
