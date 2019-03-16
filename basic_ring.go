@@ -10,7 +10,7 @@ type basicRing struct {
 	cap, read, length uint
 }
 
-func (r *basicRing) mask(val uint) uint {
+func (r *basicRing) Mask(val uint) uint {
 	return val % r.cap
 }
 
@@ -37,7 +37,7 @@ func (r *basicRing) Push() (uint, error) {
 	l := r.length
 	r.length++
 
-	return r.mask(r.read + l), nil
+	return r.Mask(r.read + l), nil
 }
 
 func (r *basicRing) Shift() (uint, error) {
@@ -46,7 +46,7 @@ func (r *basicRing) Shift() (uint, error) {
 	}
 	r.length--
 	i := r.read
-	r.read = r.mask(r.read + 1)
+	r.read = r.Mask(r.read + 1)
 	return i, nil
 }
 

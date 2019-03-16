@@ -22,25 +22,13 @@
 // Non-destructive operations on Rings
 //
 // If your code needs to only inspect the contents of the ring instead
-// of shifting them out, there are two functions available to do this
-// conveniently:
+// of shifting them out, you can use a stateful iterator in either
+// LIFO or FIFO direction available to do this conveniently:
 //
-//     - All(ring) returns the occupied indexes from oldest to youngest
-//     - Rev(ring) returns the occupied indexes from youngest to oldest
+//     o.ScanLIFO(ring) and
+//     o.ScanFIFO(ring)
 //
-// If instead you prefer not to allocate an array the size of your
-// buffer, you can also write two for loops with the functions
-// Start1(), End1() and End2():
-//
-//     for i := o.Start1(ring); i<o.End1(ring); i++ {
-//         // process the first batch of elements
-//     }
-//     for i := uint(0); i < o.End2(ring); i++ {
-//         // process the second batch of elements
-//     }
-//
-// The first for loop will iterate over at most [start; len(array)),
-// and the second will iterate over at most [0; end).
+// See Scanner for defails and usage examples.
 //
 // Thread Safety
 //

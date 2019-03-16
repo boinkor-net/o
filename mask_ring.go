@@ -4,12 +4,12 @@ type maskRing struct {
 	cap, read, write uint
 }
 
-func (r *maskRing) mask(val uint) uint {
+func (r *maskRing) Mask(val uint) uint {
 	return val & (r.cap - 1)
 }
 
 func (r *maskRing) start() uint {
-	return r.mask(r.read)
+	return r.Mask(r.read)
 }
 
 func (r *maskRing) capacity() uint {
@@ -31,7 +31,7 @@ func (r *maskRing) Push() (uint, error) {
 	i := r.write
 	r.write++
 
-	return r.mask(i), nil
+	return r.Mask(i), nil
 }
 
 func (r *maskRing) Shift() (uint, error) {

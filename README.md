@@ -40,15 +40,10 @@ You can also use `o.ForcePush` to insert a new element regardless of
 whether the ring is full, overwriting the element that's there.
 
 And then, if you do not want to shift out elements to read them, you
-can use `o.Ring.All` to get an array containing all the occupied
-indexes in the ring (for oldest to newest), and iterate over them -
-it's your data structure! You get to go hog wild. `o.Ring.Rev` exists
-too, in case you wanted to go from newest to oldest.
-
-If you just can't afford to allocate another ring buffer-sized array
-of `uint`, you can also use the index helpers `o.Start1`, `o.End1`,
-and `o.End2` to get bounds for two `for` loops. Like I said, go _hog_
-wild.
+can use `o.ScanFIFO` and `o.ScanLIFO` to get an iterator over the
+occupied indexes in the ring (LIFO for oldest to newest, FIFO for
+newest to oldest), and iterate over your ring's buffer using those
+indexes - it's your data structure! You get to go entirely hog wild.
 
 ## Why do this at all?
 
