@@ -9,7 +9,7 @@ import (
 func TestAll(t *testing.T) {
 	tests := []struct {
 		name     string
-		ra       RingAccountant
+		ra       Ring
 		cycles   uint
 		expected []uint
 	}{
@@ -34,7 +34,7 @@ func TestAll(t *testing.T) {
 func TestRev(t *testing.T) {
 	tests := []struct {
 		name     string
-		ra       RingAccountant
+		ra       Ring
 		cycles   uint
 		expected []uint
 	}{
@@ -59,7 +59,7 @@ func TestRev(t *testing.T) {
 func TestStartEnd(t *testing.T) {
 	tests := []struct {
 		name               string
-		ra                 RingAccountant
+		ra                 Ring
 		cycles             uint
 		start1, end1, end2 uint
 	}{

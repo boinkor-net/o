@@ -12,7 +12,7 @@ type basicRing struct {
 
 // NewBasic returns a BasicRing with the capacity given as an absolute
 // number of elements.
-func NewBasic(cap uint) RingAccountant {
+func NewBasic(cap uint) Ring {
 	return &basicRing{cap: cap}
 }
 

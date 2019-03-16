@@ -2,7 +2,7 @@ package o
 
 // All non-destructively returns all indexes, in order, for the given
 // ring accountant.
-func All(ring RingAccountant) []uint {
+func All(ring Ring) []uint {
 	r := make([]uint, ring.Size())
 	elt := ring.start()
 	for i := range r {
@@ -14,7 +14,7 @@ func All(ring RingAccountant) []uint {
 
 // All non-destructively returns all indexes, in reverse order, for
 // the given ring accountant.
-func Rev(ring RingAccountant) []uint {
+func Rev(ring Ring) []uint {
 	r := make([]uint, ring.Size())
 	elt := ring.start()
 	for i := range r {
@@ -24,11 +24,11 @@ func Rev(ring RingAccountant) []uint {
 	return r
 }
 
-func Start1(ring RingAccountant) uint {
+func Start1(ring Ring) uint {
 	return ring.start()
 }
 
-func End1(ring RingAccountant) uint {
+func End1(ring Ring) uint {
 	cap := ring.capacity()
 	start := ring.start()
 	size := ring.Size()
@@ -39,7 +39,7 @@ func End1(ring RingAccountant) uint {
 	}
 }
 
-func End2(ring RingAccountant) uint {
+func End2(ring Ring) uint {
 	cap := ring.capacity()
 	start := ring.start()
 	size := ring.Size()

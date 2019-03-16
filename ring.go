@@ -18,9 +18,9 @@ const ErrEmpty emptyErr = iota
 // ErrFull indicates an addition operation on a full ring.
 const ErrFull fullErr = iota
 
-// RingAccountant specifies the methods that a ring buffer accounting
+// Ring specifies the methods that a ring buffer accounting
 // data structure must have.
-type RingAccountant interface {
+type Ring interface {
 	// Push lets a writer account for a new element in the ring,
 	// and returns that element's index.
 	//
@@ -55,7 +55,7 @@ type RingAccountant interface {
 
 // ForcePush forces a new element onto the ring, discarding an element
 // if the ring is full.
-func ForcePush(r RingAccountant) uint {
+func ForcePush(r Ring) uint {
 	if r.Full() {
 		_, _ = r.Shift()
 	}

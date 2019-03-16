@@ -6,7 +6,7 @@ type maskRing struct {
 
 // NewPowerOfTwo returns a ring accounting structure that is optimized
 // for rings with capacities of 2^n.
-func NewPowerOfTwo(n uint) RingAccountant {
+func NewPowerOfTwo(n uint) Ring {
 	return &maskRing{cap: 1 << n}
 }
 
