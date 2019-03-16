@@ -13,10 +13,10 @@ func TestAll(t *testing.T) {
 		cycles   uint
 		expected []uint
 	}{
-		{"basic4/13", NewBasic(4), 13, []uint{1, 2, 3, 0}},
-		{"basic4/6", NewBasic(4), 6, []uint{2, 3, 0, 1}},
-		{"mask4/13", NewPowerOfTwo(2), 13, []uint{1, 2, 3, 0}},
-		{"mask4/6", NewPowerOfTwo(2), 6, []uint{2, 3, 0, 1}},
+		{"basic5/13", NewRing(5), 13, []uint{3, 4, 0, 1, 2}},
+		{"basic5/6", NewRing(5), 6, []uint{1, 2, 3, 4, 0}},
+		{"mask4/13", NewRing(4), 13, []uint{1, 2, 3, 0}},
+		{"mask4/6", NewRing(4), 6, []uint{2, 3, 0, 1}},
 	}
 	for _, elt := range tests {
 		test := elt
@@ -38,10 +38,10 @@ func TestRev(t *testing.T) {
 		cycles   uint
 		expected []uint
 	}{
-		{"basic4/13", NewBasic(4), 13, []uint{0, 3, 2, 1}},
-		{"basic4/6", NewBasic(4), 6, []uint{1, 0, 3, 2}},
-		{"mask4/13", NewPowerOfTwo(2), 13, []uint{0, 3, 2, 1}},
-		{"mask4/6", NewPowerOfTwo(2), 6, []uint{1, 0, 3, 2}},
+		{"basic5/13", NewRing(5), 13, []uint{2, 1, 0, 4, 3}},
+		{"basic5/6", NewRing(5), 6, []uint{0, 4, 3, 2, 1}},
+		{"mask4/13", NewRing(4), 13, []uint{0, 3, 2, 1}},
+		{"mask4/6", NewRing(4), 6, []uint{1, 0, 3, 2}},
 	}
 	for _, elt := range tests {
 		test := elt
@@ -64,13 +64,13 @@ func TestStartEnd(t *testing.T) {
 		start1, end1, end2 uint
 	}{
 		// filled beyond their capacity:
-		{"basic4/13", NewBasic(4), 13, 1, 4, 1},
-		{"basic4/6", NewBasic(4), 6, 2, 4, 2},
-		{"mask4/13", NewPowerOfTwo(2), 13, 1, 4, 1},
-		{"mask4/6", NewPowerOfTwo(2), 6, 2, 4, 2},
+		{"basic5/13", NewRing(5), 13, 3, 5, 3},
+		{"basic5/6", NewRing(5), 6, 1, 5, 1},
+		{"mask4/13", NewRing(4), 13, 1, 4, 1},
+		{"mask4/6", NewRing(4), 6, 2, 4, 2},
 		// Filled to less than capacity:
-		{"mask4/2", NewPowerOfTwo(2), 2, 0, 2, 0},
-		{"basic4/2", NewBasic(4), 2, 0, 2, 0},
+		{"mask4/2", NewRing(4), 2, 0, 2, 0},
+		{"basic5/2", NewRing(5), 2, 0, 2, 0},
 	}
 	for _, elt := range tests {
 		test := elt

@@ -1,5 +1,7 @@
 package o
 
+import "math/bits"
+
 type fullErr uint
 
 func (e fullErr) Error() string {
@@ -60,4 +62,15 @@ func ForcePush(r Ring) uint {
 	}
 	i, _ := r.Push()
 	return i
+}
+
+// Returns a new Ring data structure. If cap is a power of 2, returns
+// a data structure that is optimized for modulo-2
+// accesses. Otherwise, the returned data structure uses general
+// modulo division for its integer math.
+func NewRing(cap uint) Ring {
+	if bits.OnesCount(cap) == 1 {
+		return &maskRing{cap: cap}
+	}
+	return &basicRing{cap: cap}
 }

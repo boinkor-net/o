@@ -11,7 +11,7 @@ const power = 16
 const N = 1 << power
 
 func TestMaskPush(t *testing.T) {
-	r := NewPowerOfTwo(power)
+	r := NewRing(N)
 	var i uint
 	for ; i < N; i++ {
 		new, err := r.Push()
@@ -23,7 +23,7 @@ func TestMaskPush(t *testing.T) {
 }
 
 func TestMaskShift(t *testing.T) {
-	r := NewPowerOfTwo(power)
+	r := NewRing(N)
 	_, err := r.Shift()
 	assert.Error(t, err)
 
@@ -43,8 +43,8 @@ func TestMaskShift(t *testing.T) {
 }
 
 func BenchmarkMaskRing(b *testing.B) {
-	power := uint(bits.Len(uint(b.N)) + 1)
-	r := NewPowerOfTwo(power)
+	n := 1 << uint(bits.Len(uint(b.N))+1)
+	r := NewRing(uint(n))
 	var i uint
 	for ; i < 1<<uint(b.N); i++ {
 		r.Push()

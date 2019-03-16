@@ -4,7 +4,6 @@ package ringio
 
 import (
 	"io"
-	"math/bits"
 
 	"github.com/antifuchs/o"
 )
@@ -19,11 +18,7 @@ type Bounded struct {
 
 func New(cap uint, overwrite bool) *Bounded {
 	buf := make([]byte, cap)
-	if cap%2 == 0 {
-		r := o.NewPowerOfTwo(uint(bits.Len(cap)))
-		return &Bounded{Ring: r, buf: buf, overwrite: overwrite}
-	}
-	return &Bounded{Ring: o.NewBasic(cap), buf: buf, overwrite: overwrite}
+	return &Bounded{Ring: o.NewRing(cap), buf: buf, overwrite: overwrite}
 }
 
 func (b *Bounded) Write(p []byte) (n int, err error) {

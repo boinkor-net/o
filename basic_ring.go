@@ -10,12 +10,6 @@ type basicRing struct {
 	cap, read, length uint
 }
 
-// NewBasic returns a BasicRing with the capacity given as an absolute
-// number of elements.
-func NewBasic(cap uint) Ring {
-	return &basicRing{cap: cap}
-}
-
 func (r *basicRing) mask(val uint) uint {
 	return val % r.cap
 }

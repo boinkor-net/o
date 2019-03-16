@@ -7,7 +7,7 @@ import (
 )
 
 func TestForcePush(t *testing.T) {
-	r := NewBasic(1)
+	r := NewRing(1)
 	r.Push()
 	assert.Equal(t, ForcePush(r), uint(0))
 }

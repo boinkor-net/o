@@ -6,8 +6,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const BasicN = 20
+
 func TestPush(t *testing.T) {
-	r := NewBasic(20)
+	r := NewRing(BasicN)
 	var i uint
 	for ; i < 20; i++ {
 		new, err := r.Push()
@@ -19,7 +21,7 @@ func TestPush(t *testing.T) {
 }
 
 func TestShift(t *testing.T) {
-	r := NewBasic(20)
+	r := NewRing(BasicN)
 	_, err := r.Shift()
 	assert.Error(t, err)
 
@@ -39,7 +41,7 @@ func TestShift(t *testing.T) {
 }
 
 func BenchmarkBasicRing(b *testing.B) {
-	r := NewBasic(uint(b.N))
+	r := NewRing(uint(b.N))
 	var i uint
 	for ; i < uint(b.N); i++ {
 		r.Push()
