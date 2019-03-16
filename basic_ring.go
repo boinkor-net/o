@@ -16,8 +16,16 @@ func NewBasic(cap uint) RingAccountant {
 	return &basicRing{cap: cap}
 }
 
-func (r *basicRing) Mask(val uint) uint {
+func (r *basicRing) mask(val uint) uint {
 	return val % r.cap
+}
+
+func (r *basicRing) start() uint {
+	return r.read
+}
+
+func (r *basicRing) capacity() uint {
+	return r.cap
 }
 
 func (r *basicRing) Full() bool {
@@ -35,7 +43,7 @@ func (r *basicRing) Push() (uint, error) {
 	l := r.length
 	r.length++
 
-	return r.Mask(r.read + l), nil
+	return r.mask(r.read + l), nil
 }
 
 func (r *basicRing) Shift() (uint, error) {
@@ -44,7 +52,7 @@ func (r *basicRing) Shift() (uint, error) {
 	}
 	r.length--
 	i := r.read
-	r.read = r.Mask(r.read + 1)
+	r.read = r.mask(r.read + 1)
 	return i, nil
 }
 

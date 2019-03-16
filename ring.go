@@ -39,10 +39,26 @@ type RingAccountant interface {
 	// Empty returns whether the ring has zero element in it.
 	Empty() bool
 
-	// Size returns the capacity the ring buffer.
+	// Size returns the number of elements in the ring buffer.
 	Size() uint
 
-	// Mask adjusts an index value to fit the ring buffer. It is
-	// used by various internal functions.
-	Mask(uint) uint
+	// mask adjusts an index value to fit the ring buffer.
+	mask(uint) uint
+
+	// start returns the index of first element that can be read.
+	start() uint
+
+	// capacity returns the number of elements that the ring
+	// accounts for.
+	capacity() uint
+}
+
+// ForcePush forces a new element onto the ring, discarding an element
+// if the ring is full.
+func ForcePush(r RingAccountant) uint {
+	if r.Full() {
+		_, _ = r.Shift()
+	}
+	i, _ := r.Push()
+	return i
 }

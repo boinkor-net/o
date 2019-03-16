@@ -10,8 +10,16 @@ func NewPowerOfTwo(n uint) RingAccountant {
 	return &maskRing{cap: 1 << n}
 }
 
-func (r *maskRing) Mask(val uint) uint {
+func (r *maskRing) mask(val uint) uint {
 	return val & (r.cap - 1)
+}
+
+func (r *maskRing) start() uint {
+	return r.mask(r.read)
+}
+
+func (r *maskRing) capacity() uint {
+	return r.cap
 }
 
 func (r *maskRing) Full() bool {
@@ -29,7 +37,7 @@ func (r *maskRing) Push() (uint, error) {
 	i := r.write
 	r.write++
 
-	return r.Mask(i), nil
+	return r.mask(i), nil
 }
 
 func (r *maskRing) Shift() (uint, error) {
