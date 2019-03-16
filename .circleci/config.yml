@@ -53,10 +53,23 @@ jobs:
           command: |
             go test -run '^$' -bench . -v ./...
 
+  ci_success:
+    docker:
+      - image: alpine:latest
+    steps:
+      - run:
+          name: Success
+          command: "echo yay"
+
 workflows:
   version: 2
-  build-workflow:
+  continuous_integration:
     jobs:
       - gofmt
       - tests
       - benchmarks
+      - ci_success:
+          requires:
+            - gofmt
+            - tests
+            - benchmarks
