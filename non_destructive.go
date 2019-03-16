@@ -7,7 +7,7 @@ func All(ring Ring) []uint {
 	elt := ring.start()
 	for i := range r {
 		r[i] = elt
-		elt = ring.mask(elt + 1)
+		elt = ring.Mask(elt + 1)
 	}
 	return r
 }
@@ -19,7 +19,7 @@ func Rev(ring Ring) []uint {
 	elt := ring.start()
 	for i := range r {
 		r[len(r)-i-1] = elt
-		elt = ring.mask(elt + 1)
+		elt = ring.Mask(elt + 1)
 	}
 	return r
 }
