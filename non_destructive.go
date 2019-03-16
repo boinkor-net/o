@@ -1,79 +1,49 @@
 package o
 
-// All returns all indexes occupied in the ring buffer in order (from
-// oldest to youngest). It does not modify the ring.
-func All(ring Ring) []uint {
-	r := make([]uint, ring.Size())
-	elt := ring.start()
-	for i := range r {
-		r[i] = elt
-		elt = ring.Mask(elt + 1)
-	}
-	return r
+// Scanner implements iterating over the elements in a Ring without
+// removing them. A scanner can go in either LIFO (oldest element
+// first) or FIFO (newest element first) direction.
+type Scanner struct {
+	ring Ring
+	cur  uint
+	fifo bool
 }
 
-// Rev returns all indexes occupied in the ring buffer, in reverse
-// order (from youngest to oldest). It does not modify the ring.
-func Rev(ring Ring) []uint {
-	r := make([]uint, ring.Size())
-	elt := ring.start()
-	for i := range r {
-		r[len(r)-i-1] = elt
-		elt = ring.Mask(elt + 1)
-	}
-	return r
+// ScanLIFO returns a Scanner for the given Ring that iterates over
+// the occupied indexes in LIFO (oldest to newest) direction.
+func ScanLIFO(ring Ring) *Scanner {
+	return &Scanner{ring, ring.start(), false}
 }
 
-// Start1 returns the index of the first occupied entry in the ring
-// buffer, to aid in iterating over all indexes in the ring in LIFO
-// order.
-func Start1(ring Ring) uint {
-	return ring.start()
+// ScanFIFO returns a Scanner for the given Ring that iterates over
+// the occupied indexes in FIFO (newest to oldest) direction.
+func ScanFIFO(ring Ring) *Scanner {
+	return &Scanner{ring, ring.capacity()*2 + ring.start(), true}
 }
 
-// End1 returns the end index of the first loop when iterating in LIFO
-// order over all occupied indexes in the ring buffer. See Start1.
-func End1(ring Ring) uint {
-	cap := ring.capacity()
-	start := ring.start()
-	size := ring.Size()
-	if start+size > cap {
-		return cap
+// Next advances the Scanner to the next available element. If no next
+// element is available, it returns false.
+func (s *Scanner) Next() bool {
+	var next uint
+	var ok bool
+	if s.fifo {
+		next = s.cur - 1
+		ok = next > s.ring.start()+s.ring.capacity()-1
 	} else {
-		return start + size
+		next = s.cur + 1
+		ok = next <= s.ring.start()+s.ring.Size()
 	}
-}
-
-// End2 returns the end index of the second loop when iterating in
-// LIFO order over all occupied indexes in the ring buffer. See
-// Start1.
-func End2(ring Ring) uint {
-	cap := ring.capacity()
-	start := ring.start()
-	size := ring.Size()
-	if start+size > cap {
-		return start
-	} else {
-		return 0
+	if !ok {
+		return false
 	}
+	s.cur = next
+	return true
 }
 
-// StartRev1 returns the start index of the first loop when iterating
-// in FIFO order over all occupied indexes in the ring buffer.
-func StartRev1(ring Ring) uint {
-	return ring.Mask(ring.start() - 1)
-}
-
-// StartRev2 returns the start index of the second loop when iterating
-// in FIFO order over all occupied indexes in the ring buffer. See
-// StartRev1.
-func StartRev2(ring Ring) uint {
-	return ring.Mask(End1(ring) - 1)
-}
-
-// EndRev2 returns the end index of the second loop when iterating in
-// FIFO order over all occupied indexes in the ring buffer. See
-// StartRev1.
-func EndRev2(ring Ring) uint {
-	return Start1(ring)
+// Value returns the index value of the Scanner's current position.
+func (s *Scanner) Value() uint {
+	if s.fifo {
+		return s.ring.Mask(s.cur)
+	}
+	return s.ring.Mask(s.cur - 1)
 }
