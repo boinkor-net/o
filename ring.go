@@ -64,13 +64,30 @@ func ForcePush(r Ring) uint {
 	return i
 }
 
-// Returns a new Ring data structure. If cap is a power of 2, returns
-// a data structure that is optimized for modulo-2
-// accesses. Otherwise, the returned data structure uses general
-// modulo division for its integer math.
+// Returns a new Ring data structure with the given capacity. If cap
+// is a power of 2, returns a data structure that is optimized for
+// modulo-2 accesses. Otherwise, the returned data structure uses
+// general modulo division for its integer math.
 func NewRing(cap uint) Ring {
 	if bits.OnesCount(cap) == 1 {
 		return &maskRing{cap: cap}
 	}
 	return &basicRing{cap: cap}
+}
+
+// A type, usually a collection, that has length. This is inspired by
+// (but kept intentionally smaller than) sort.Interface.
+type Slice interface {
+	// Len returns the length of a slice.
+	Len() int
+}
+
+// NewRingForSlice creates a Ring that fits a slice. The slice's type
+// must implement o.Slice (which is satisfied if the type implements
+// sort.Interface, also).
+//
+// It is not advisable to resize the slice after creating a ring for
+// it.
+func NewRingForSlice(i Slice) Ring {
+	return NewRing(uint(i.Len()))
 }
