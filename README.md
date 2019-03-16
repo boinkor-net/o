@@ -1,4 +1,6 @@
 # o - go ring buffers for arbitrary types without `interface{}`
+[![godoc](https://godoc.org/github.com/antifuchs/o?status.svg)](http://godoc.org/github.com/antifuchs/o)
+
 
 This package provides the data structures that you need in order to
 implement an efficient ring buffer in go. In contrast to other ring
