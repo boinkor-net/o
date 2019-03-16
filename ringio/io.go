@@ -15,9 +15,16 @@ import (
 //
 // It is able to safely read and write in parallel, protected by a Mutex.
 type Bounded struct {
+	sync.Mutex
 	r         o.Ring
 	buf       []byte
 	overwrite bool
+}
+
+type byteSlice []byte
+
+func (bs byteSlice) Len() int {
+	return len(bs)
 }
 
 // New returns a bounded ring buffer of the given capacity. If
@@ -26,10 +33,14 @@ type Bounded struct {
 // will fail.
 func New(cap uint, overwrite bool) *Bounded {
 	buf := make([]byte, cap)
-	return &Bounded{r: o.NewRing(cap), buf: buf, overwrite: overwrite}
+	ring := o.NewRing(cap)
+	return &Bounded{r: ring, buf: buf, overwrite: overwrite}
 }
 
 func (b *Bounded) Write(p []byte) (n int, err error) {
+	b.Lock()
+	defer b.Unlock()
+
 	var i uint
 	for n, c := range p {
 		if b.overwrite {
@@ -46,9 +57,13 @@ func (b *Bounded) Write(p []byte) (n int, err error) {
 }
 
 func (b *Bounded) Read(p []byte) (n int, err error) {
+	b.Lock()
+	defer b.Unlock()
+
 	if b.r.Empty() {
 		return 0, io.EOF
 	}
+
 	var i uint
 	for {
 		i, err = b.r.Shift()
