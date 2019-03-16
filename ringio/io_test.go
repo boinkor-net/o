@@ -4,11 +4,15 @@ import (
 	"io"
 	"testing"
 
+	"github.com/antifuchs/o"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestReadBoundedWrites(t *testing.T) {
-	b := New(9, true)
+	t.Parallel()
+
+	b := New(9, false)
 	n, err := b.Write([]byte("hi"))
 	assert.NoError(t, err)
 	assert.Equal(t, 2, n)
@@ -25,7 +29,9 @@ func TestReadBoundedWrites(t *testing.T) {
 }
 
 func TestReadOverwrites(t *testing.T) {
-	b := New(9, false)
+	t.Parallel()
+
+	b := New(9, true)
 	n, err := b.Write([]byte("hi"))
 	assert.NoError(t, err)
 	assert.Equal(t, 2, n)
