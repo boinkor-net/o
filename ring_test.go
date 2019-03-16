@@ -1,6 +1,7 @@
 package o
 
 import (
+	"sort"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -36,6 +37,26 @@ func TestPushAndShift(t *testing.T) {
 				require.NoError(t, err)
 				require.Equal(t, pushed, shifted, "on attempt %d", i)
 			}
+		})
+	}
+}
+
+func TestSlices(t *testing.T) {
+	tests := []struct {
+		name  string
+		slice Slice
+		len   uint
+	}{
+		{"[]int", sort.IntSlice([]int{1, 2, 3, 4}), 4},
+		{"[]float64", sort.Float64Slice([]float64{1.0, 2.0, 3.0}), 3},
+		{"[]string", sort.StringSlice([]string{"hi", "there", "farts", "yup", "strings"}), 5},
+	}
+	for _, elt := range tests {
+		test := elt
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			ring := NewRingForSlice(test.slice)
+			assert.Equal(t, ring.capacity(), test.len)
 		})
 	}
 }
