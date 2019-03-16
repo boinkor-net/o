@@ -52,13 +52,14 @@ wild.
 
 ## Why do this at all?
 
-Depending on where you intend to use a ring buffer, it might be
-difficult to reason about whether what you get out is what you
-expect. The error handling code for that sometimes gets grody, but
-really - that isn't the reason why I did this.
+Depending on where you intend to use a "generic" ring buffer (that
+backs onto an array of `interface{}`), it sometimes is difficult to
+reason about whether what you get out is what you expect. The error
+handling code for that sometimes gets grody, but really - that isn't
+the reason why I did this.
 
-Mostly, I did it as a semi-joke that could be useful. Now that I've
-written this, I'm no longer sure it is a joke. People might acually
-want to use this and feel good about using it, and now I'm terrified
-because I think this might actually be a reasonable thing to use,
-under some circumstances.
+Mostly, I did it as a semi-joke that I thought could be useful in a
+problem I was solving. Now that I've actually written this, I'm no
+longer sure it ever was a joke. People might acually want to use this
+and feel good about using it, and now I'm terrified because I think
+this might actually be a reasonable thing to use.
