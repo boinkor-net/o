@@ -1,0 +1,75 @@
+version: 2
+jobs:
+  gofmt:
+    docker:
+      - image: circleci/golang:1.9
+    working_directory: /go/src/github.com/antifuchs/o
+    steps:
+      - checkout
+      - run:
+          name: gofmt
+          command: |
+            gofmt -w .
+      - run:
+          name: Check for differences
+          command: |
+            git add . && git diff --cached && git diff-index --cached --exit-code HEAD
+
+  tests:
+    docker:
+      - image: circleci/golang:1.9
+    working_directory: /go/src/github.com/antifuchs/o
+    steps:
+      - checkout
+      - run:
+          name: gofmt
+          command: |
+            gofmt -w .
+      - run:
+          name: deps
+          command: |
+            go get -v -t -d ./...
+      - run:
+          name: Run tests
+          command: |
+            go test -v ./...
+
+  benchmarks:
+    docker:
+      - image: circleci/golang:1.9
+    working_directory: /go/src/github.com/antifuchs/o
+    steps:
+      - checkout
+      - run:
+          name: gofmt
+          command: |
+            gofmt -w .
+      - run:
+          name: deps
+          command: |
+            go get -v -t -d ./...
+      - run:
+          name: Run benchmarks
+          command: |
+            go test -run '^$' -bench . -v ./...
+
+  ci_success:
+    docker:
+      - image: alpine:latest
+    steps:
+      - run:
+          name: Success
+          command: "echo yay"
+
+workflows:
+  version: 2
+  continuous_integration:
+    jobs:
+      - gofmt
+      - tests
+      - benchmarks
+      - ci_success:
+          requires:
+            - gofmt
+            - tests
+            - benchmarks

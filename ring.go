@@ -43,8 +43,8 @@ type Ring interface {
 	// Size returns the number of elements in the ring buffer.
 	Size() uint
 
-	// mask adjusts an index value to fit the ring buffer.
-	mask(uint) uint
+	// Mask adjusts an index value to fit the ring buffer.
+	Mask(uint) uint
 
 	// start returns the index of first element that can be read.
 	start() uint
