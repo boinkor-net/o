@@ -130,6 +130,9 @@ func TestMatching(t *testing.T) {
 				"start index should be the same for Rev() and the one before Start1()")
 			assert.Equal(t, rev[len(rev)-1], Start1(ra),
 				"The last entry in Rev() should be Start1()")
+			assert.Equal(t, StartRev1(ra), ra.Mask(Start1(ra)-1))
+			assert.Equal(t, StartRev2(ra), ra.Mask(End1(ra)-1))
+			assert.Equal(t, EndRev2(ra), Start1(ra))
 		})
 	}
 }

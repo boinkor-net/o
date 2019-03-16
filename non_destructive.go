@@ -25,13 +25,14 @@ func Rev(ring Ring) []uint {
 }
 
 // Start1 returns the index of the first occupied entry in the ring
-// buffer, to aid in iterating over all indexes in the ring.
+// buffer, to aid in iterating over all indexes in the ring in LIFO
+// order.
 func Start1(ring Ring) uint {
 	return ring.start()
 }
 
-// End1 returns the end index of the first loop when iterating over
-// all occupied indexes in the ring buffer. See Start1.
+// End1 returns the end index of the first loop when iterating in LIFO
+// order over all occupied indexes in the ring buffer. See Start1.
 func End1(ring Ring) uint {
 	cap := ring.capacity()
 	start := ring.start()
@@ -43,8 +44,9 @@ func End1(ring Ring) uint {
 	}
 }
 
-// End2 returns the end index of the second loop when iterating over
-// all occupied indexes in the ring buffer. See Start1.
+// End2 returns the end index of the second loop when iterating in
+// LIFO order over all occupied indexes in the ring buffer. See
+// Start1.
 func End2(ring Ring) uint {
 	cap := ring.capacity()
 	start := ring.start()
@@ -54,4 +56,24 @@ func End2(ring Ring) uint {
 	} else {
 		return 0
 	}
+}
+
+// StartRev1 returns the start index of the first loop when iterating
+// in FIFO order over all occupied indexes in the ring buffer.
+func StartRev1(ring Ring) uint {
+	return ring.Mask(ring.start() - 1)
+}
+
+// StartRev2 returns the start index of the second loop when iterating
+// in FIFO order over all occupied indexes in the ring buffer. See
+// StartRev1.
+func StartRev2(ring Ring) uint {
+	return ring.Mask(End1(ring) - 1)
+}
+
+// EndRev2 returns the end index of the second loop when iterating in
+// FIFO order over all occupied indexes in the ring buffer. See
+// StartRev1.
+func EndRev2(ring Ring) uint {
+	return Start1(ring)
 }
