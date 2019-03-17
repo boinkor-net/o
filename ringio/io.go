@@ -13,7 +13,8 @@ import (
 // bytes as are given for the capacity before it has to be drained by
 // reading from it.
 //
-// It is able to safely read and write in parallel, protected by a Mutex.
+// It is able to safely read and write in parallel, protected by a
+// Mutex.
 type Bounded struct {
 	sync.Mutex
 	r         o.Ring
@@ -77,4 +78,15 @@ func (b *Bounded) Read(p []byte) (n int, err error) {
 		n++
 	}
 	return
+}
+
+func (b *Bounded) reset() {
+	b.r = o.NewRingForSlice(byteSlice(b.buf))
+}
+
+// Reset throws away all data on the ring buffer.
+func (b *Bounded) Reset() {
+	b.Lock()
+	defer b.Unlock()
+	b.reset()
 }

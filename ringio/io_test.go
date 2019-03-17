@@ -86,3 +86,22 @@ func TestParallel(t *testing.T) {
 
 	close(quit)
 }
+
+func TestReset(t *testing.T) {
+	t.Parallel()
+
+	b := New(8, true)
+	n, err := b.Write([]byte("hi this is a test"))
+	require.NoError(t, err)
+	assert.Equal(t, 17, n)
+
+	read := make([]byte, 4)
+	n, err = b.Read(read)
+	require.NoError(t, err)
+	assert.Equal(t, 4, n)
+	b.Reset()
+
+	n, err = b.Read(read)
+	assert.Equal(t, io.EOF, err)
+	assert.Equal(t, 0, n)
+}
