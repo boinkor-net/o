@@ -31,9 +31,17 @@ jobs:
             mkdir -p /tmp/artifacts
       - run:
           name: Run tests
+          # This trick comes from https://medium.com/@taowen/go-test-coverage-for-multi-package-project-d4f36f2b573a:
           command: |
-            go test -race -coverprofile=c.out -timeout=15s -v ./...
-            go tool cover -html=c.out -o /tmp/artifacts/coverage.html
+            srcpkg="$(go list ./... | grep -v vendor | tr "\n" , | sed 's/,$//')"
+            for d in $(go list ./... | grep -v vendor); do
+                go test -race -coverprofile=profile.out -timeout=15s -v
+                if [ -f profile.out ]; then
+                    cat profile.out >> coverage.txt
+                    rm profile.out
+                fi
+            done
+            go tool cover -html=coverage.txt -o /tmp/artifacts/coverage.html
       - store_artifacts:
           path: /tmp/artifacts
 
