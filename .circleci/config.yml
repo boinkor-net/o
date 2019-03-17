@@ -35,7 +35,7 @@ jobs:
           command: |
             srcpkg="$(go list ./... | grep -v vendor | tr "\n" , | sed 's/,$//')"
             for d in $(go list ./... | grep -v vendor); do
-                go test -race -coverprofile=profile.out -timeout=15s -v
+                go test -race -coverprofile=profile.out -timeout=15s -coverpkg="$srcpkg" -v $d
                 if [ -f profile.out ]; then
                     cat profile.out >> coverage.txt
                     rm profile.out
