@@ -90,3 +90,22 @@ func (b *Bounded) Reset() {
 	defer b.Unlock()
 	b.reset()
 }
+
+// Bytes consumes all readable data on the ring buffer and returns a
+// newly-allocated byte slice containing all readable bytes.
+func (b *Bounded) Bytes() []byte {
+	b.Lock()
+	defer b.Unlock()
+
+	first, second := o.Consume(b.r)
+	val := make([]byte, 0, first.Length()+second.Length())
+	val = append(val, b.buf[first.Start:first.End]...)
+	val = append(val, b.buf[second.Start:second.End]...)
+	return val
+}
+
+// String consumes all readable data on the ring buffer and returns it
+// as a string.
+func (b *Bounded) String() string {
+	return string(b.Bytes())
+}

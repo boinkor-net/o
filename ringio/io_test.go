@@ -105,3 +105,31 @@ func TestReset(t *testing.T) {
 	assert.Equal(t, io.EOF, err)
 	assert.Equal(t, 0, n)
 }
+
+func TestBytes(t *testing.T) {
+	t.Parallel()
+	b := New(4, true)
+	n, err := b.Write([]byte("hi this is a test"))
+	require.NoError(t, err)
+	assert.Equal(t, 17, n)
+
+	assert.Equal(t, []byte("test"), b.Bytes())
+	read := make([]byte, 4)
+	n, err = b.Read(read)
+	assert.Equal(t, io.EOF, err)
+	assert.Equal(t, 0, n)
+}
+
+func TestString(t *testing.T) {
+	t.Parallel()
+	b := New(4, true)
+	n, err := b.Write([]byte("hi this is a test"))
+	require.NoError(t, err)
+	assert.Equal(t, 17, n)
+
+	assert.Equal(t, "test", b.String())
+	read := make([]byte, 4)
+	n, err = b.Read(read)
+	assert.Equal(t, io.EOF, err)
+	assert.Equal(t, 0, n)
+}
