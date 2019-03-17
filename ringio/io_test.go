@@ -133,19 +133,3 @@ func TestString(t *testing.T) {
 	assert.Equal(t, io.EOF, err)
 	assert.Equal(t, 0, n)
 }
-
-func BenchmarkBytes(b *testing.B) {
-	bounded := New(uint(b.N), true)
-	buf := make([]byte, b.N)
-	for i := range buf {
-		buf[i] = byte(i % 256)
-	}
-	bounded.Write(buf)
-
-	b.ResetTimer()
-	bytes := bounded.Bytes()
-
-	b.StopTimer()
-	assert.Equal(b, len(bytes), b.N)
-	assert.Equal(b, buf, bytes)
-}
