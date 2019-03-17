@@ -24,6 +24,16 @@ func (r *maskRing) end() uint {
 	return r.Mask(r.write)
 }
 
+func (r *maskRing) add(n uint) (uint, error) {
+	space := r.cap - r.Size()
+	if n > space {
+		r.write += space
+		return space, ErrFull
+	}
+	r.write += n
+	return n, nil
+}
+
 func (r *maskRing) Full() bool {
 	return r.Size() == r.cap
 }

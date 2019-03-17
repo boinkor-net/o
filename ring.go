@@ -59,6 +59,11 @@ type Ring interface {
 	// reset adjusts the difference between the read and write
 	// points of the ring back to 0.
 	reset()
+
+	// add accounts for n new elements in the ring. If fewer
+	// elements could be accounted for, only accounts for the ones
+	// that could fit and returns ErrFull.
+	add(n uint) (uint, error)
 }
 
 // ForcePush forces a new element onto the ring, discarding the oldest

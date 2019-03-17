@@ -30,6 +30,16 @@ func (r *basicRing) reset() {
 	r.length = 0
 }
 
+func (r *basicRing) add(n uint) (uint, error) {
+	available := r.cap - r.length
+	if n > r.cap-r.length {
+		r.length = r.cap
+		return available, ErrFull
+	}
+	r.length += n
+	return n, nil
+}
+
 func (r *basicRing) Full() bool {
 	return r.cap == r.length
 }

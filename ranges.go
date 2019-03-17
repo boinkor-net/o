@@ -57,6 +57,30 @@ func Consume(ring Ring) (first Range, second Range) {
 	return Inspect(ring)
 }
 
+// Reserve bulk-pushes count indexes onto the Ring and returns ranges
+// covering the indexes that were successfully pushed.
+//
+// If the Ring can only accomodate fewer elements before filling up,
+// Reserve will reserve the elements it can, then return those ranges
+// and ErrFull.
+func Reserve(ring Ring, count uint) (first, second Range, err error) {
+	if count == 0 {
+		return
+	}
+	first.Start = ring.end()
+
+	var added uint
+	added, err = ring.add(count)
+	end1 := ring.Mask(first.Start + added)
+
+	first.End = end1
+	if end1 <= first.Start {
+		second.End = end1
+		first.End = ring.capacity()
+	}
+	return
+}
+
 // Scanner implements iterating over the elements in a Ring without
 // removing them. A scanner can go in either LIFO (oldest element
 // first) or FIFO (newest element first) direction.

@@ -184,3 +184,81 @@ func TestConsume(t *testing.T) {
 		})
 	}
 }
+
+func TestReserve(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name          string
+		cap           uint
+		fill          int
+		read          int
+		add           uint
+		first, second o.Range
+		err           error
+	}{
+		{
+			name:  "basic5/13",
+			cap:   5,
+			add:   13,
+			first: o.Range{0, 5}, second: o.Range{0, 0},
+			err: o.ErrFull,
+		},
+		{
+			name:  "mask4/13",
+			cap:   4,
+			add:   13,
+			first: o.Range{0, 4}, second: o.Range{0, 0},
+			err: o.ErrFull,
+		},
+		{
+			name:  "zero",
+			cap:   4,
+			add:   0,
+			first: o.Range{0, 0}, second: o.Range{0, 0},
+		},
+		{
+			name:  "basic5/fill:4/13",
+			cap:   5,
+			fill:  4,
+			add:   13,
+			first: o.Range{4, 5}, second: o.Range{0, 0},
+			err: o.ErrFull,
+		},
+		{
+			name:  "basic4/fill:3/13",
+			cap:   4,
+			fill:  3,
+			add:   13,
+			first: o.Range{3, 4}, second: o.Range{0, 0},
+			err: o.ErrFull,
+		},
+		{
+			name:  "centered",
+			cap:   5,
+			fill:  4,
+			read:  2,
+			add:   13,
+			first: o.Range{4, 5}, second: o.Range{0, 2},
+			err: o.ErrFull,
+		},
+	}
+	for _, elt := range tests {
+		test := elt
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			ring := o.NewRing(test.cap)
+			for i := 0; i < test.fill; i++ {
+				o.ForcePush(ring)
+			}
+			for i := 0; i < test.read; i++ {
+				ring.Shift()
+			}
+
+			first, second, err := o.Reserve(ring, test.add)
+			t.Log("Reserve:", first, second, err)
+			assert.Equal(t, test.first, first, "first")
+			assert.Equal(t, test.second, second, "second")
+			assert.Equal(t, test.err, err)
+		})
+	}
+}
