@@ -86,7 +86,6 @@ func (b *Bounded) Read(p []byte) (n int, err error) {
 		p[n] = b.buf[i]
 		n++
 	}
-	return
 }
 
 func (b *Bounded) reset() {
