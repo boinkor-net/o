@@ -45,6 +45,7 @@ jobs:
             go tool cover -html=coverage.txt -o /tmp/artifacts/coverage.html
       - store_artifacts:
           path: /tmp/artifacts
+          destination: /
 
   benchmarks:
     docker:
