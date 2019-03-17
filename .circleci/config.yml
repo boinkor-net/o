@@ -26,9 +26,16 @@ jobs:
           command: |
             go get -v -t -d ./...
       - run:
+          name: "Create a temp directory for artifacts"
+          command: |
+            mkdir -p /tmp/artifacts
+      - run:
           name: Run tests
           command: |
-            go test -race -timeout=15s -v ./...
+            go test -race -coverprofile=c.out -timeout=15s -v ./...
+            go tool cover -html=c.out -o /tmp/artifacts/coverage.html
+      - store_artifacts:
+          path: /tmp/artifacts
 
   benchmarks:
     docker:
