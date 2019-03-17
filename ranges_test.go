@@ -170,22 +170,6 @@ func TestReserve(t *testing.T) {
 			first: o.Range{0, 0}, second: o.Range{0, 0},
 		},
 		{
-			name:  "basic5/fill:4/13",
-			cap:   5,
-			fill:  4,
-			add:   13,
-			first: o.Range{4, 5}, second: o.Range{0, 0},
-			err: o.ErrFull,
-		},
-		{
-			name:  "basic4/fill:3/13",
-			cap:   4,
-			fill:  3,
-			add:   13,
-			first: o.Range{3, 4}, second: o.Range{0, 0},
-			err: o.ErrFull,
-		},
-		{
 			name:  "centered",
 			cap:   5,
 			fill:  4,
