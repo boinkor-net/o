@@ -1,4 +1,6 @@
 version: 2
+orbs:
+  codecov: codecov/codecov@1.0.2
 jobs:
   gofmt:
     docker:
@@ -44,6 +46,9 @@ jobs:
       - store_artifacts:
           path: /tmp/artifacts
           destination: /
+      - codecov/upload:
+          file: /tmp/coverage.txt
+
 
   benchmarks:
     docker:
