@@ -74,7 +74,7 @@ func Reserve(ring Ring, count uint) (first, second Range, err error) {
 	end1 := ring.Mask(first.Start + added)
 
 	first.End = end1
-	if end1 <= first.Start {
+	if end1 <= first.Start && added > 0 {
 		second.End = end1
 		first.End = ring.capacity()
 	}
