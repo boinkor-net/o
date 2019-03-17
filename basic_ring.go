@@ -18,8 +18,26 @@ func (r *basicRing) start() uint {
 	return r.read
 }
 
+func (r *basicRing) end() uint {
+	return r.Mask(r.read + r.length)
+}
+
 func (r *basicRing) capacity() uint {
 	return r.cap
+}
+
+func (r *basicRing) reset() {
+	r.length = 0
+}
+
+func (r *basicRing) add(n uint) (uint, error) {
+	available := r.cap - r.length
+	if n > r.cap-r.length {
+		r.length = r.cap
+		return available, ErrFull
+	}
+	r.length += n
+	return n, nil
 }
 
 func (r *basicRing) Full() bool {
@@ -53,3 +71,5 @@ func (r *basicRing) Shift() (uint, error) {
 func (r *basicRing) Size() uint {
 	return r.length
 }
+
+var _ Ring = &basicRing{}

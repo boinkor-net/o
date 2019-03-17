@@ -49,9 +49,21 @@ type Ring interface {
 	// start returns the index of first element that can be read.
 	start() uint
 
+	// end returns the index of the last element that can be read.
+	end() uint
+
 	// capacity returns the number of elements that the ring
 	// accounts for.
 	capacity() uint
+
+	// reset adjusts the difference between the read and write
+	// points of the ring back to 0.
+	reset()
+
+	// add accounts for n new elements in the ring. If fewer
+	// elements could be accounted for, only accounts for the ones
+	// that could fit and returns ErrFull.
+	add(n uint) (uint, error)
 }
 
 // ForcePush forces a new element onto the ring, discarding the oldest

@@ -30,8 +30,10 @@ func (bs byteSlice) Len() int {
 
 // New returns a bounded ring buffer of the given capacity. If
 // overwrite is true, a full ring buffer will discard unread bytes and
-// overwrite them upon writes. Otherwise, writes on a full ring buffer
-// will fail.
+// overwrite them upon writes.
+//
+// Otherwise, writes on a full ring buffer will fill up the buffer
+// with as much data as they can and then return io.ErrShortWrite.
 func New(cap uint, overwrite bool) *Bounded {
 	buf := make([]byte, cap)
 	ring := o.NewRingForSlice(byteSlice(buf))
@@ -42,19 +44,26 @@ func (b *Bounded) Write(p []byte) (n int, err error) {
 	b.Lock()
 	defer b.Unlock()
 
-	var i uint
-	for n, c := range p {
-		if b.overwrite {
-			i = o.ForcePush(b.r)
-		} else {
-			i, err = b.r.Push()
-			if err == o.ErrFull {
-				return n, io.ErrShortWrite
-			}
+	n = len(p)
+	remaining := uint(len(b.buf)) - b.r.Size()
+	if b.overwrite && remaining < uint(len(p)) {
+		// consume the bytes that we're over and reset input
+		// to fit:
+		p = p[len(p)-len(b.buf) : len(p)]
+		for i := uint(0); i <= b.r.Size(); i++ {
+			b.r.Shift()
 		}
-		b.buf[i] = c
 	}
-	return len(p), nil
+	first, second, resErr := o.Reserve(b.r, uint(len(p)))
+	if !b.overwrite {
+		n = int(first.Length() + second.Length())
+		if resErr != nil {
+			err = io.ErrShortWrite
+		}
+	}
+	copy(b.buf[first.Start:first.End], p[0:first.Length()])
+	copy(b.buf[second.Start:second.End], p[first.Length():len(p)])
+	return
 }
 
 func (b *Bounded) Read(p []byte) (n int, err error) {
@@ -89,4 +98,23 @@ func (b *Bounded) Reset() {
 	b.Lock()
 	defer b.Unlock()
 	b.reset()
+}
+
+// Bytes consumes all readable data on the ring buffer and returns a
+// newly-allocated byte slice containing all readable bytes.
+func (b *Bounded) Bytes() []byte {
+	b.Lock()
+	defer b.Unlock()
+
+	first, second := o.Consume(b.r)
+	val := make([]byte, first.Length()+second.Length())
+	copy(val, b.buf[first.Start:first.End])
+	copy(val[first.End:], b.buf[second.Start:second.End])
+	return val
+}
+
+// String consumes all readable data on the ring buffer and returns it
+// as a string.
+func (b *Bounded) String() string {
+	return string(b.Bytes())
 }
