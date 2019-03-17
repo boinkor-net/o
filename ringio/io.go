@@ -98,9 +98,9 @@ func (b *Bounded) Bytes() []byte {
 	defer b.Unlock()
 
 	first, second := o.Consume(b.r)
-	val := make([]byte, 0, first.Length()+second.Length())
-	val = append(val, b.buf[first.Start:first.End]...)
-	val = append(val, b.buf[second.Start:second.End]...)
+	val := make([]byte, first.Length()+second.Length())
+	copy(val, b.buf[first.Start:first.End])
+	copy(val[first.End:], b.buf[second.Start:second.End])
 	return val
 }
 
