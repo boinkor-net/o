@@ -12,8 +12,16 @@ func (r *maskRing) start() uint {
 	return r.Mask(r.read)
 }
 
+func (r *maskRing) reset() {
+	r.read = r.write
+}
+
 func (r *maskRing) capacity() uint {
 	return r.cap
+}
+
+func (r *maskRing) end() uint {
+	return r.Mask(r.write)
 }
 
 func (r *maskRing) Full() bool {
@@ -46,3 +54,5 @@ func (r *maskRing) Shift() (uint, error) {
 func (r *maskRing) Size() uint {
 	return r.write - r.read
 }
+
+var _ Ring = &maskRing{}
