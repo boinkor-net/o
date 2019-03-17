@@ -25,6 +25,7 @@ jobs:
           name: deps
           command: |
             go get -v -t -d ./...
+            go get -v github.com/wadey/gocovmerge
       - run:
           name: "Create a temp directory for artifacts"
           command: |
@@ -34,15 +35,12 @@ jobs:
           # This trick comes from https://medium.com/@taowen/go-test-coverage-for-multi-package-project-d4f36f2b573a:
           command: |
             srcpkg="$(go list ./... | grep -v vendor | tr "\n" , | sed 's/,$//')"
-            echo "mode: atomic" > coverage.txt
+            mkdir /tmp/coverage
             for d in $(go list ./... | grep -v vendor); do
-                go test -race -coverprofile=profile.out -timeout=60s -coverpkg="$srcpkg" -v $d
-                if [ -f profile.out ]; then
-                    grep -v '^mode: atomic$' profile.out >> coverage.txt
-                    rm profile.out
-                fi
+                go test -race -coverprofile=/tmp/coverage/$(echo "$d" | tr / _) -timeout=60s -coverpkg="$srcpkg" -v $d
             done
-            go tool cover -html=coverage.txt -o /tmp/artifacts/coverage.html
+            gocovmerge /tmp/coverage/* > /tmp/coverage.txt
+            go tool cover -html=/tmp/coverage.txt -o /tmp/artifacts/coverage.html
       - store_artifacts:
           path: /tmp/artifacts
           destination: /
