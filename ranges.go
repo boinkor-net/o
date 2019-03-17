@@ -61,46 +61,50 @@ func Consume(ring Ring) (first Range, second Range) {
 // removing them. A scanner can go in either LIFO (oldest element
 // first) or FIFO (newest element first) direction.
 type Scanner struct {
-	ring Ring
-	cur  uint
-	fifo bool
+	cur    uint
+	ranges []Range
+	fifo   bool
 }
 
 // ScanLIFO returns a Scanner for the given Ring that iterates over
 // the occupied indexes in LIFO (oldest to newest) direction.
 func ScanLIFO(ring Ring) *Scanner {
-	return &Scanner{ring, ring.start(), false}
+	first, second := Inspect(ring)
+	return &Scanner{first.Start, []Range{first, second}, false}
 }
 
 // ScanFIFO returns a Scanner for the given Ring that iterates over
 // the occupied indexes in FIFO (newest to oldest) direction.
 func ScanFIFO(ring Ring) *Scanner {
-	return &Scanner{ring, ring.capacity()*2 + ring.start(), true}
+	first, second := Inspect(ring)
+	return &Scanner{second.End, []Range{second, first}, true}
 }
 
 // Next advances the Scanner to the next available element. If no next
 // element is available, it returns false.
 func (s *Scanner) Next() bool {
-	var next uint
-	var ok bool
+	rg := &s.ranges[0]
+	if rg.Empty() {
+		s.ranges = s.ranges[1:]
+		if len(s.ranges) == 0 {
+			return false
+		}
+		rg = &s.ranges[0]
+		if rg.Empty() {
+			return false
+		}
+	}
 	if s.fifo {
-		next = s.cur - 1
-		ok = next > s.ring.start()+s.ring.capacity()-1
+		s.cur = rg.End - 1
+		rg.End -= 1
 	} else {
-		next = s.cur + 1
-		ok = next <= s.ring.start()+s.ring.Size()
+		s.cur = rg.Start
+		rg.Start += 1
 	}
-	if !ok {
-		return false
-	}
-	s.cur = next
 	return true
 }
 
 // Value returns the index value of the Scanner's current position.
 func (s *Scanner) Value() uint {
-	if s.fifo {
-		return s.ring.Mask(s.cur)
-	}
-	return s.ring.Mask(s.cur - 1)
+	return s.cur
 }
