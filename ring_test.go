@@ -60,3 +60,9 @@ func TestSlices(t *testing.T) {
 		})
 	}
 }
+
+// TestErrors is silly but improves coverage metrics.
+func TestErrors(t *testing.T) {
+	assert.Equal(t, ErrEmpty.Error(), "reading from an empty ring")
+	assert.Equal(t, ErrFull.Error(), "inserting into a full ring")
+}

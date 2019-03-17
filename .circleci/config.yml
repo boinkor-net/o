@@ -1,4 +1,6 @@
-version: 2
+version: 2.1
+orbs:
+  codecov: codecov/codecov@1.0.2
 jobs:
   gofmt:
     docker:
@@ -22,17 +24,31 @@ jobs:
     steps:
       - checkout
       - run:
-          name: gofmt
-          command: |
-            gofmt -w .
-      - run:
           name: deps
           command: |
             go get -v -t -d ./...
+            go get -v github.com/wadey/gocovmerge
+      - run:
+          name: "Create a temp directory for artifacts"
+          command: |
+            mkdir -p /tmp/artifacts
       - run:
           name: Run tests
+          # This trick comes from https://medium.com/@taowen/go-test-coverage-for-multi-package-project-d4f36f2b573a:
           command: |
-            go test -race -timeout=15s -v ./...
+            srcpkg="$(go list ./... | grep -v vendor | tr "\n" , | sed 's/,$//')"
+            mkdir /tmp/coverage
+            for d in $(go list ./... | grep -v vendor); do
+                go test -race -coverprofile=/tmp/coverage/$(echo "$d" | tr / _) -timeout=60s -coverpkg="$srcpkg" -v $d
+            done
+            gocovmerge /tmp/coverage/* > /tmp/coverage.txt
+            go tool cover -html=/tmp/coverage.txt -o /tmp/artifacts/coverage.html
+      - store_artifacts:
+          path: /tmp/artifacts
+          destination: /
+      - codecov/upload:
+          file: /tmp/coverage.txt
+
 
   benchmarks:
     docker:
