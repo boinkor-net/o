@@ -66,6 +66,9 @@ func (b *Bounded) Read(p []byte) (n int, err error) {
 
 	var i uint
 	for {
+		if n >= len(p) {
+			return
+		}
 		i, err = b.r.Shift()
 		if err == o.ErrEmpty {
 			return n, nil
