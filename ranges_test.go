@@ -115,3 +115,72 @@ func TestMatching(t *testing.T) {
 		})
 	}
 }
+
+func TestInspect(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name          string
+		ra            o.Ring
+		cycles        uint
+		first, second o.Range
+	}{
+		{"basic5/13", o.NewRing(5), 13, o.Range{3, 5}, o.Range{0, 3}},
+		{"basic5/6", o.NewRing(5), 6, o.Range{1, 5}, o.Range{0, 1}},
+		{"basic5/4", o.NewRing(5), 4, o.Range{0, 5}, o.Range{0, 0}},
+		{"basic5/0", o.NewRing(5), 0, o.Range{0, 0}, o.Range{0, 0}},
+		{"mask4/13", o.NewRing(4), 13, o.Range{1, 4}, o.Range{0, 1}},
+		{"mask4/6", o.NewRing(4), 6, o.Range{2, 4}, o.Range{0, 2}},
+		{"mask4/4", o.NewRing(4), 4, o.Range{0, 4}, o.Range{0, 0}},
+		{"mask4/0", o.NewRing(4), 0, o.Range{0, 0}, o.Range{0, 0}},
+	}
+	for _, elt := range tests {
+		test := elt
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			var i uint
+			for i = 0; i < test.cycles; i++ {
+				o.ForcePush(test.ra)
+			}
+			before := test.ra.Size()
+			first, second := o.Inspect(test.ra)
+			t.Logf("%#v", test.ra)
+			assert.Equal(t, test.first, first, "first")
+			assert.Equal(t, test.second, second, "second")
+			assert.Equal(t, before, test.ra.Size())
+		})
+	}
+}
+
+func TestConsume(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name          string
+		ra            o.Ring
+		cycles        uint
+		first, second o.Range
+	}{
+		{"basic5/13", o.NewRing(5), 13, o.Range{3, 5}, o.Range{0, 3}},
+		{"basic5/6", o.NewRing(5), 6, o.Range{1, 5}, o.Range{0, 1}},
+		{"basic5/4", o.NewRing(5), 4, o.Range{0, 5}, o.Range{0, 0}},
+		{"basic5/0", o.NewRing(5), 0, o.Range{0, 0}, o.Range{0, 0}},
+		{"mask4/13", o.NewRing(4), 13, o.Range{1, 4}, o.Range{0, 1}},
+		{"mask4/6", o.NewRing(4), 6, o.Range{2, 4}, o.Range{0, 2}},
+		{"mask4/4", o.NewRing(4), 4, o.Range{0, 4}, o.Range{0, 0}},
+		{"mask4/0", o.NewRing(4), 0, o.Range{0, 0}, o.Range{0, 0}},
+	}
+	for _, elt := range tests {
+		test := elt
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			var i uint
+			for i = 0; i < test.cycles; i++ {
+				o.ForcePush(test.ra)
+			}
+			first, second := o.Consume(test.ra)
+			t.Logf("%#v", test.ra)
+			assert.Equal(t, test.first, first, "first")
+			assert.Equal(t, test.second, second, "second")
+			assert.Equal(t, uint(0), test.ra.Size())
+		})
+	}
+}
