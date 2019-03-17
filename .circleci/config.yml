@@ -32,7 +32,7 @@ jobs:
       - run:
           name: Run tests
           command: |
-            go test -race -timeout=5s -v ./...
+            go test -race -timeout=15s -v ./...
 
   benchmarks:
     docker:
