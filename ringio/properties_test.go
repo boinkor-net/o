@@ -12,51 +12,53 @@ import (
 )
 
 func TestPropReadWritesOverwrite(t *testing.T) {
-	t.Parallel()
 	params := gopter.DefaultTestParameters()
 	params.MinSize = 1
 	params.MinSuccessfulTests = 1000
 	properties := gopter.NewProperties(params)
 	properties.Property("read a written slice in an overwriting ring buffer", prop.ForAll(
-		func(cap uint, str string) *gopter.PropResult {
+		func(cap uint, str string, times uint) *gopter.PropResult {
 			input := []byte(str)
 			b := ringio.New(cap, true)
-			n, err := b.Write(input)
-			if err != nil {
-				res := gopter.NewPropResult(false, "writing")
-				res.Error = err
-				return res
-			}
-			if n != len(input) {
-				return gopter.NewPropResult(false,
-					fmt.Sprintf("wrong written length %d!=%d", n, len(input)))
-			}
 
-			output := make([]byte, n)
-			n, err = b.Read(output)
-			if err != nil {
-				res := gopter.NewPropResult(false, "reading")
-				res.Error = err
-				return res
-			}
-			if cap >= uint(len(input)) {
+			for i := uint(0); i < times; i++ {
+				n, err := b.Write(input)
+				if err != nil {
+					res := gopter.NewPropResult(false, "writing")
+					res.Error = err
+					return res
+				}
 				if n != len(input) {
 					return gopter.NewPropResult(false,
-						fmt.Sprintf("wrong read length %d!=%d", n, len(input)))
+						fmt.Sprintf("wrong written length %d!=%d", n, len(input)))
 				}
-				if !reflect.DeepEqual(output, input) {
-					return gopter.NewPropResult(false,
-						fmt.Sprintf("buffers are not equal: %#v %#v", input, output))
+
+				output := make([]byte, n)
+				n, err = b.Read(output)
+				if err != nil {
+					res := gopter.NewPropResult(false, "reading")
+					res.Error = err
+					return res
 				}
-			} else {
-				if uint(n) != cap {
-					return gopter.NewPropResult(false,
-						fmt.Sprintf("wrong read length %d!=%d", n, cap))
-				}
-				writtenInput := input[len(input)-n:]
-				if !reflect.DeepEqual(output[0:n], writtenInput) {
-					return gopter.NewPropResult(false,
-						fmt.Sprintf("buffers are not equal (%d written): %#v %#v", n, output, writtenInput))
+				if cap >= uint(len(input)) {
+					if n != len(input) {
+						return gopter.NewPropResult(false,
+							fmt.Sprintf("wrong read length %d!=%d", n, len(input)))
+					}
+					if !reflect.DeepEqual(output, input) {
+						return gopter.NewPropResult(false,
+							fmt.Sprintf("buffers are not equal: %#v %#v", input, output))
+					}
+				} else {
+					if uint(n) != cap {
+						return gopter.NewPropResult(false,
+							fmt.Sprintf("wrong read length %d!=%d", n, cap))
+					}
+					writtenInput := input[len(input)-n:]
+					if !reflect.DeepEqual(output[0:n], writtenInput) {
+						return gopter.NewPropResult(false,
+							fmt.Sprintf("buffers are not equal (%d written): %#v %#v", n, output, writtenInput))
+					}
 				}
 			}
 
@@ -64,49 +66,51 @@ func TestPropReadWritesOverwrite(t *testing.T) {
 		},
 		gen.UIntRange(1, 1024).WithLabel("buffer size"),
 		gen.AnyString().SuchThat(func(x string) bool { return len(x) > 0 }).WithLabel("text to write"),
-	),
+		gen.UIntRange(1, 10).WithLabel("time to read&write")),
 	)
 	properties.TestingRun(t)
 }
 
 func TestPropReadWritesBounded(t *testing.T) {
-	t.Parallel()
 	params := gopter.DefaultTestParameters()
 	params.MinSize = 1
 	params.MinSuccessfulTests = 1000
 	properties := gopter.NewProperties(params)
 	properties.Property("read a written slice in a ring buffer that stops at the boundary", prop.ForAll(
-		func(cap uint, str string) *gopter.PropResult {
+		func(cap uint, str string, times uint) *gopter.PropResult {
 			input := []byte(str)
 			b := ringio.New(cap, false)
-			n, err := b.Write(input)
 
-			output := make([]byte, len(input))
-			n, err = b.Read(output)
-			if err != nil {
-				res := gopter.NewPropResult(false, "reading")
-				res.Error = err
-				return res
-			}
-			if cap >= uint(len(input)) {
-				if n != len(input) {
-					return gopter.NewPropResult(false,
-						fmt.Sprintf("wrong read length %d!=%d", n, len(input)))
-				}
-				if !reflect.DeepEqual(output, input) {
-					return gopter.NewPropResult(false,
-						fmt.Sprintf("buffers are not equal: %#v %#v", input, output))
-				}
-			} else {
-				if uint(n) != cap {
-					return gopter.NewPropResult(false,
-						fmt.Sprintf("wrong read length %d!=%d", n, cap))
-				}
+			for i := uint(0); i < times; i++ {
+				n, err := b.Write(input)
 
-				writtenInput := input[0:n]
-				if !reflect.DeepEqual(output[0:n], writtenInput) {
-					return gopter.NewPropResult(false,
-						fmt.Sprintf("buffers are not equal: %#v %#v", output, writtenInput))
+				output := make([]byte, len(input))
+				n, err = b.Read(output)
+				if err != nil {
+					res := gopter.NewPropResult(false, "reading")
+					res.Error = err
+					return res
+				}
+				if cap >= uint(len(input)) {
+					if n != len(input) {
+						return gopter.NewPropResult(false,
+							fmt.Sprintf("wrong read length %d!=%d", n, len(input)))
+					}
+					if !reflect.DeepEqual(output, input) {
+						return gopter.NewPropResult(false,
+							fmt.Sprintf("buffers are not equal: %#v %#v", input, output))
+					}
+				} else {
+					if uint(n) != cap {
+						return gopter.NewPropResult(false,
+							fmt.Sprintf("wrong read length %d!=%d", n, cap))
+					}
+
+					writtenInput := input[0:n]
+					if !reflect.DeepEqual(output[0:n], writtenInput) {
+						return gopter.NewPropResult(false,
+							fmt.Sprintf("buffers are not equal: %#v %#v", output, writtenInput))
+					}
 				}
 			}
 
@@ -114,7 +118,7 @@ func TestPropReadWritesBounded(t *testing.T) {
 		},
 		gen.UIntRange(1, 1024).WithLabel("buffer size"),
 		gen.AnyString().WithLabel("text to write"),
-	),
+		gen.UIntRange(1, 10).WithLabel("time to read&write")),
 	)
 	properties.TestingRun(t)
 }
