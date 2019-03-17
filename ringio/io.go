@@ -33,7 +33,7 @@ func (bs byteSlice) Len() int {
 // will fail.
 func New(cap uint, overwrite bool) *Bounded {
 	buf := make([]byte, cap)
-	ring := o.NewRing(cap)
+	ring := o.NewRingForSlice(byteSlice(buf))
 	return &Bounded{r: ring, buf: buf, overwrite: overwrite}
 }
 
