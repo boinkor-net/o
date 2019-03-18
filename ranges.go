@@ -139,10 +139,10 @@ func (s *Scanner) Next() bool {
 	}
 	if s.fifo {
 		s.cur = rg.End - 1
-		rg.End -= 1
+		rg.End--
 	} else {
 		s.cur = rg.Start
-		rg.Start += 1
+		rg.Start++
 	}
 	return true
 }

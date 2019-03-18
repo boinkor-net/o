@@ -86,9 +86,9 @@ func TestPropReadWritesBounded(t *testing.T) {
 				n, err := b.Write(input)
 
 				if tooLong {
-					if n != 0 {
+					if n != 0 || err == nil {
 						return gopter.NewPropResult(false,
-							fmt.Sprintf("should not have written, but: %d", n))
+							fmt.Sprintf("should not have written, but: %d and %v", n, err))
 					}
 				}
 

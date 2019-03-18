@@ -43,6 +43,7 @@ func TestReadOverwrites(t *testing.T) {
 	n, err = b.Read(buf)
 	assert.NoError(t, err)
 	assert.Equal(t, []byte("he buffer"), buf)
+	assert.Equal(t, 9, n)
 }
 
 func TestParallel(t *testing.T) {
@@ -56,7 +57,7 @@ func TestParallel(t *testing.T) {
 			case <-quit:
 				return
 			default:
-				b.Write(toWrite)
+				_, _ = b.Write(toWrite)
 			}
 		}
 	}
