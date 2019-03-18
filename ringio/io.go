@@ -72,18 +72,15 @@ func (b *Bounded) Read(p []byte) (n int, err error) {
 		return 0, nil
 	}
 
-	var i uint
-	for {
-		if n >= len(p) {
-			return
-		}
-		i, err = b.r.Shift()
-		if err == o.ErrEmpty {
-			return n, nil
-		}
-		p[n] = b.buf[i]
-		n++
+	n = int(b.r.Size())
+	if n > len(p) {
+		n = len(p)
 	}
+	var first, second o.Range
+	first, second, err = b.r.ShiftN(uint(n))
+	copy(p[0:first.Length()], b.buf[first.Start:first.End])
+	copy(p[first.Length():], b.buf[second.Start:second.End])
+	return
 }
 
 func (b *Bounded) reset() {
