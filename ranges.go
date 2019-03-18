@@ -57,26 +57,25 @@ func (r Ring) Consume() (first Range, second Range) {
 	return r.Inspect()
 }
 
-// Reserve bulk-pushes count indexes onto the Ring and returns ranges
+// PushN bulk-pushes count indexes onto the Ring and returns ranges
 // covering the indexes that were successfully pushed.
 //
-// If the Ring can only accomodate fewer elements before filling up,
-// Reserve will reserve the elements it can, then return those ranges
-// and ErrFull.
-func Reserve(ring Ring, count uint) (first, second Range, err error) {
+// If the Ring can not accomodate all elements before filling up,
+// PushN will return ErrFull; the ranges in this case are
+// meaningless.
+func (r Ring) PushN(count uint) (first, second Range, err error) {
 	if count == 0 {
 		return
 	}
-	first.Start = ring.end()
+	first.Start = r.end()
 
-	var added uint
-	added, err = ring.add(count)
-	end1 := ring.Mask(first.Start + added)
-
-	first.End = end1
-	if end1 <= first.Start && added > 0 {
-		second.End = end1
-		first.End = ring.capacity()
+	first.Start, first.End, err = r.pushN(count)
+	if err != nil {
+		return
+	}
+	if first.End <= first.Start && count > 0 {
+		second.End = first.End
+		first.End = r.capacity()
 	}
 	return
 }

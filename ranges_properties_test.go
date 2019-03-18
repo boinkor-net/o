@@ -75,7 +75,7 @@ func TestPropReserve(t *testing.T) {
 			startSize := ring.Size()
 			overflows := startSize+reserve > cap
 
-			first, second, err := o.Reserve(ring, reserve)
+			first, second, err := ring.PushN(reserve)
 			reservedAny := !first.Empty() || !second.Empty()
 			if overflows && err == nil {
 				return "expected error"

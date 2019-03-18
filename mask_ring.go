@@ -24,14 +24,13 @@ func (r *maskRing) end() uint {
 	return r.Mask(r.write)
 }
 
-func (r *maskRing) add(n uint) (uint, error) {
-	space := r.cap - r.Size()
-	if n > space {
-		r.write += space
-		return space, ErrFull
+func (r *maskRing) pushN(n uint) (uint, uint, error) {
+	start := r.write
+	if n > r.cap-r.Size() {
+		return start, start, ErrFull
 	}
 	r.write += n
-	return n, nil
+	return start, r.Mask(r.write), nil
 }
 
 func (r *maskRing) Full() bool {

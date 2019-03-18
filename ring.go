@@ -64,10 +64,11 @@ type ringBackend interface {
 	// points of the ring back to 0.
 	reset()
 
-	// add accounts for n new elements in the ring. If fewer
-	// elements could be accounted for, only accounts for the ones
-	// that could fit and returns ErrFull.
-	add(n uint) (uint, error)
+	// pushN accounts for n new elements in the ring and returns
+	// the indexes of the first and last element. If not all
+	// elements can be inserted, does not push them and returns
+	// only ErrNotFound.
+	pushN(n uint) (start uint, end uint, err error)
 }
 
 // ForcePush forces a new element onto the ring, discarding the oldest

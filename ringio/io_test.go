@@ -19,13 +19,13 @@ func TestReadBoundedWrites(t *testing.T) {
 
 	n, err = b.Write([]byte("this will hit the capacity of the buffer"))
 	assert.Error(t, err)
-	assert.Equal(t, io.ErrShortWrite, err)
-	assert.Equal(t, 7, n)
+	assert.Equal(t, o.ErrFull, err)
+	assert.Equal(t, 0, n)
 
 	buf := make([]byte, 9)
 	n, err = b.Read(buf)
 	assert.NoError(t, err)
-	assert.Equal(t, []byte("hithis wi"), buf)
+	assert.Equal(t, []byte("hi"), buf[0:n])
 }
 
 func TestReadOverwrites(t *testing.T) {

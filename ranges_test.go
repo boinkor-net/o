@@ -191,7 +191,7 @@ func TestReserve(t *testing.T) {
 				ring.Shift()
 			}
 
-			first, second, err := o.Reserve(ring, test.add)
+			first, second, err := ring.PushN(test.add)
 			t.Log("Reserve:", first, second, err)
 			assert.Equal(t, test.first, first, "first")
 			assert.Equal(t, test.second, second, "second")
