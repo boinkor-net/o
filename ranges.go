@@ -52,9 +52,9 @@ func (r Ring) Inspect() (first Range, second Range) {
 // were occupied in the ring prior to resetting.
 //
 // See also Inspect.
-func Consume(ring Ring) (first Range, second Range) {
-	defer ring.reset()
-	return ring.Inspect()
+func (r Ring) Consume() (first Range, second Range) {
+	defer r.reset()
+	return r.Inspect()
 }
 
 // Reserve bulk-pushes count indexes onto the Ring and returns ranges

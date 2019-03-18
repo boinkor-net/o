@@ -129,7 +129,7 @@ func TestConsume(t *testing.T) {
 			for i = 0; i < test.cycles; i++ {
 				test.ra.ForcePush()
 			}
-			first, second := o.Consume(test.ra)
+			first, second := test.ra.Consume()
 			t.Logf("%#v", test.ra)
 			assert.Equal(t, test.first, first, "first")
 			assert.Equal(t, test.second, second, "second")
