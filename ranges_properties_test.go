@@ -46,7 +46,7 @@ func TestPropFIFOandLIFOMatch(t *testing.T) {
 			}
 
 			last := lifo[0]
-			for nth, _ := range lifo {
+			for nth := range lifo {
 				if lifo[nth] != fifo[len(fifo)-1-nth] {
 					return fmt.Sprintf("fifo / lifo mismatch:\n%#v\n%#v", lifo, fifo)
 				}

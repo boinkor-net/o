@@ -2,24 +2,26 @@ version: 2.1
 orbs:
   codecov: codecov/codecov@1.0.2
 jobs:
-  gofmt:
+  lints:
     docker:
-      - image: circleci/golang:1.9
+      - image: circleci/golang:1.12
     working_directory: /go/src/github.com/antifuchs/o
     steps:
       - checkout
       - run:
-          name: gofmt
+          name: deps
           command: |
-            gofmt -w .
+            go get -v -t -d ./...
+            # golangci-lint:
+            env GO111MODULE=on go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.15.0
       - run:
-          name: Check for differences
+          name: golangci-lint
           command: |
-            git add . && git diff --cached && git diff-index --cached --exit-code HEAD
+            golangci-lint run -E goimports
 
   tests:
     docker:
-      - image: circleci/golang:1.9
+      - image: circleci/golang:1.12
     working_directory: /go/src/github.com/antifuchs/o
     steps:
       - checkout
@@ -55,7 +57,7 @@ jobs:
 
   benchmarks:
     docker:
-      - image: circleci/golang:1.9
+      - image: circleci/golang:1.12
     working_directory: /go/src/github.com/antifuchs/o
     steps:
       - checkout
@@ -93,11 +95,11 @@ workflows:
   version: 2
   continuous_integration:
     jobs:
-      - gofmt
       - tests
       - benchmarks
+      - lints
       - ci_success:
           requires:
-            - gofmt
             - tests
             - benchmarks
+            - lints

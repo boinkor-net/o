@@ -99,10 +99,10 @@ func (r Ring) Mask(i uint) uint {
 	return r.mask(i)
 }
 
-// Returns a new Ring data structure with the given capacity. If cap
-// is a power of 2, returns a data structure that is optimized for
-// modulo-2 accesses. Otherwise, the returned data structure uses
-// general modulo division for its integer math.
+// NewRing returns a new Ring data structure with the given
+// capacity. If cap is a power of 2, returns a data structure that is
+// optimized for modulo-2 accesses. Otherwise, the returned data
+// structure uses general modulo division for its integer math.
 func NewRing(cap uint) Ring {
 	if cap == 0 {
 		return Ring{zeroRing{}}
@@ -113,8 +113,9 @@ func NewRing(cap uint) Ring {
 	return Ring{&basicRing{cap: cap}}
 }
 
-// A type, usually a collection, that has length. This is inspired by
-// (but kept intentionally smaller than) sort.Interface.
+// Slice represents a type, usually a collection, that has
+// length. This is inspired by (but kept intentionally smaller than)
+// sort.Interface.
 type Slice interface {
 	// Len returns the length of a slice.
 	Len() int

@@ -1,4 +1,4 @@
-// package ringio implements a ring-buffer that is an io.Reader and an
+// Package ringio implements a ring-buffer that is an io.Reader and an
 // io.Writer with fixed-size semantics.
 package ringio
 
@@ -52,15 +52,15 @@ func (b *Bounded) Write(p []byte) (n int, err error) {
 		}
 		// consume the bytes that we're over and reset input
 		// to fit:
-		p = p[reserve-b.r.Capacity() : len(p)]
+		p = p[reserve-b.r.Capacity():]
 		for i := uint(0); i <= b.r.Size(); i++ {
-			b.r.Shift()
+			_, _ = b.r.Shift()
 		}
 		reserve = uint(len(p))
 	}
 	first, second, _ := b.r.PushN(reserve)
 	copy(b.buf[first.Start:first.End], p[0:first.Length()])
-	copy(b.buf[second.Start:second.End], p[first.Length():len(p)])
+	copy(b.buf[second.Start:second.End], p[first.Length():])
 	return
 }
 
