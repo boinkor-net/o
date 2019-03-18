@@ -61,7 +61,8 @@ func (r Ring) Consume() (first Range, second Range) {
 // returns ranges covering the indexes that were pushed.
 //
 // If the Ring can not accommodate all elements before filling up,
-// PushN will return ErrFull; the ranges in this case are meaningless.
+// PushN reserves nothing and returns ErrFull; the ranges returned in
+// this case are meaningless and have zero length.
 func (r Ring) PushN(count uint) (first, second Range, err error) {
 	if count == 0 {
 		return
@@ -82,8 +83,9 @@ func (r Ring) PushN(count uint) (first, second Range, err error) {
 // ShiftN bulk-"read"s count indexes from the start of the Ring and
 // returns ranges covering the indexes that were removed.
 //
-// If the Ring holds only fewer elements as requested, ShiftN will
-// return ErrFull; the ranges returned in this case are meaningless.
+// If the Ring holds only fewer elements as requested, ShiftN reads
+// nothing and returns ErrFull; the ranges returned in this case are
+// meaningless and have zero length.
 func (r Ring) ShiftN(count uint) (first, second Range, err error) {
 	if count == 0 {
 		return

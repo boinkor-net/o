@@ -61,13 +61,13 @@ type ringBackend interface {
 }
 
 // Capacity returns the number of continuous indexes that can be
-// represented on the ring. IOW, it returns the highest possible
-// index+1.
+// represented on the ring.
 func (r Ring) Capacity() uint {
 	return r.capacity()
 }
 
-// Empty returns whether the ring has zero element in it.
+// Empty returns whether the ring has zero elements that are readable
+// on it.
 func (r Ring) Empty() bool {
 	return r.empty()
 }
@@ -83,7 +83,8 @@ func (r Ring) ForcePush() uint {
 	return i
 }
 
-// Full returns whether the ring buffer is at capacity.
+// Full returns true if the Ring has occupied all possible index
+// values.
 func (r Ring) Full() bool {
 	return r.full()
 }
@@ -100,9 +101,17 @@ func (r Ring) Mask(i uint) uint {
 }
 
 // NewRing returns a new Ring data structure with the given
-// capacity. If cap is a power of 2, returns a data structure that is
-// optimized for modulo-2 accesses. Otherwise, the returned data
-// structure uses general modulo division for its integer math.
+// capacity.
+//
+// If cap is a power of 2, returns a Ring optimized for
+// bitwise manipulation of the indexes.
+//
+// If cap is 0, returns a Ring that does not perform any operations
+// and only returns errors.
+//
+// Otherwise, the returned data structure uses general modulo division
+// for its integer adjustments, and is a lot slower than the
+// power-of-2 variant.
 func NewRing(cap uint) Ring {
 	if cap == 0 {
 		return Ring{zeroRing{}}
@@ -122,8 +131,8 @@ type Slice interface {
 }
 
 // NewRingForSlice creates a Ring that fits a slice. The slice's type
-// must implement o.Slice (which is satisfied if the type implements
-// sort.Interface, also).
+// must implement o.Slice (which is also satisfied if the type
+// implements sort.Interface).
 //
 // It is not advisable to resize the slice after creating a ring for
 // it.
