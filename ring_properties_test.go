@@ -28,7 +28,39 @@ func TestPropShiftPushes(t *testing.T) {
 		},
 		gen.UInt().WithLabel("ring size"),
 		gen.UIntRange(1, 257*90).WithLabel("number of entries made"),
-	),
-	)
+	))
+	properties.TestingRun(t)
+}
+
+func TestPropBounds(t *testing.T) {
+	params := gopter.DefaultTestParameters()
+	params.MinSuccessfulTests = 1000
+	properties := gopter.NewProperties(params)
+
+	properties.Property("Read own writes", prop.ForAll(
+		func(ringSize, entries uint) string {
+			ring := o.NewRing(ringSize)
+
+			_, _, err := ring.PushN(entries)
+			if entries > ringSize && err == nil {
+				return "should have errored"
+			}
+
+			if entries == ringSize && !ring.Full() {
+				return "should be full"
+			}
+
+			if entries < ringSize && ring.Full() {
+				return "should not be full"
+			}
+
+			if entries == 0 && !ring.Empty() {
+				return "should be empty"
+			}
+			return ""
+		},
+		gen.UInt().WithLabel("ring size"),
+		gen.UIntRange(0, 257*90).WithLabel("number of entries made"),
+	))
 	properties.TestingRun(t)
 }
