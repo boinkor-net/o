@@ -1,6 +1,7 @@
 package o_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/antifuchs/o"
@@ -41,9 +42,19 @@ func TestPropBounds(t *testing.T) {
 		func(ringSize, entries uint) string {
 			ring := o.NewRing(ringSize)
 
-			_, _, err := ring.PushN(entries)
-			if entries > ringSize && err == nil {
-				return "should have errored"
+			wFirst, wSecond, err := ring.PushN(entries)
+			if entries > ringSize {
+				if err == nil {
+					return "should have errored"
+				}
+				return ""
+			}
+
+			if entries == 0 {
+				if !ring.Empty() {
+					return "should be empty"
+				}
+				return ""
 			}
 
 			if entries == ringSize && !ring.Full() {
@@ -54,9 +65,13 @@ func TestPropBounds(t *testing.T) {
 				return "should not be full"
 			}
 
-			if entries == 0 && !ring.Empty() {
-				return "should be empty"
+			first, second := ring.Consume()
+			if (wFirst.Start != first.Start && first.End != wFirst.End+1) ||
+				(!second.Empty() && wSecond.Start != second.Start && second.End != wSecond.End+1) {
+				return fmt.Sprintf("Expected same ranges, but\n%#v %#v\n%#v %#v",
+					wFirst, wSecond, first, second)
 			}
+
 			return ""
 		},
 		gen.UInt().WithLabel("ring size"),
