@@ -95,7 +95,7 @@ func TestInspect(t *testing.T) {
 				test.ra.ForcePush()
 			}
 			before := test.ra.Size()
-			first, second := o.Inspect(test.ra)
+			first, second := test.ra.Inspect()
 			t.Logf("%#v", test.ra)
 			assert.Equal(t, test.first, first, "first")
 			assert.Equal(t, test.second, second, "second")

@@ -32,17 +32,17 @@ func (r Range) Length() uint {
 // accurate picture of the occupied elements. The second range may be
 // empty (Start & Length = 0) if there is nothing occupied on the left
 // part of the buffer.
-func Inspect(ring Ring) (first Range, second Range) {
-	if ring.Empty() {
+func (r Ring) Inspect() (first Range, second Range) {
+	if r.Empty() {
 		return
 	}
-	first.Start = ring.start()
-	end1 := ring.end()
+	first.Start = r.start()
+	end1 := r.end()
 
 	first.End = end1 + 1
 	if end1 <= first.Start {
 		second.End = end1
-		first.End = ring.capacity()
+		first.End = r.capacity()
 	}
 	return
 }
@@ -54,7 +54,7 @@ func Inspect(ring Ring) (first Range, second Range) {
 // See also Inspect.
 func Consume(ring Ring) (first Range, second Range) {
 	defer ring.reset()
-	return Inspect(ring)
+	return ring.Inspect()
 }
 
 // Reserve bulk-pushes count indexes onto the Ring and returns ranges
@@ -93,14 +93,14 @@ type Scanner struct {
 // ScanLIFO returns a Scanner for the given Ring that iterates over
 // the occupied indexes in LIFO (oldest to newest) direction.
 func ScanLIFO(ring Ring) *Scanner {
-	first, second := Inspect(ring)
+	first, second := ring.Inspect()
 	return &Scanner{first.Start, []Range{first, second}, false}
 }
 
 // ScanFIFO returns a Scanner for the given Ring that iterates over
 // the occupied indexes in FIFO (newest to oldest) direction.
 func ScanFIFO(ring Ring) *Scanner {
-	first, second := Inspect(ring)
+	first, second := ring.Inspect()
 	return &Scanner{second.End, []Range{second, first}, true}
 }
 
