@@ -19,7 +19,7 @@ func TestPropMatchingRanges(t *testing.T) {
 			ring := o.NewRing(cap)
 			insert := cap + overage
 			for i := uint(0); i < insert; i++ {
-				o.ForcePush(ring)
+				ring.ForcePush()
 			}
 			if ring.Size() != cap {
 				return "Size does not match cap"
@@ -67,7 +67,7 @@ func TestPropReserve(t *testing.T) {
 			ring := o.NewRing(cap)
 			var startIdx uint
 			for i := uint(0); i < fill; i++ {
-				startIdx = ring.Mask(o.ForcePush(ring) + 1)
+				startIdx = ring.Mask(ring.ForcePush() + 1)
 			}
 			for i := uint(0); i < read; i++ {
 				ring.Shift()

@@ -27,7 +27,7 @@ func TestLIFO(t *testing.T) {
 			results := make([]uint, 0, len(test.expected))
 			var i uint
 			for i = 0; i < test.cycles; i++ {
-				o.ForcePush(test.ra)
+				test.ra.ForcePush()
 			}
 			s := o.ScanLIFO(test.ra)
 			for s.Next() {
@@ -58,7 +58,7 @@ func TestFIFO(t *testing.T) {
 			results := make([]uint, 0, len(test.expected))
 			var i uint
 			for i = 0; i < test.cycles; i++ {
-				o.ForcePush(test.ra)
+				test.ra.ForcePush()
 			}
 			s := o.ScanFIFO(test.ra)
 			for s.Next() {
@@ -92,7 +92,7 @@ func TestInspect(t *testing.T) {
 			t.Parallel()
 			var i uint
 			for i = 0; i < test.cycles; i++ {
-				o.ForcePush(test.ra)
+				test.ra.ForcePush()
 			}
 			before := test.ra.Size()
 			first, second := o.Inspect(test.ra)
@@ -127,7 +127,7 @@ func TestConsume(t *testing.T) {
 			t.Parallel()
 			var i uint
 			for i = 0; i < test.cycles; i++ {
-				o.ForcePush(test.ra)
+				test.ra.ForcePush()
 			}
 			first, second := o.Consume(test.ra)
 			t.Logf("%#v", test.ra)
@@ -185,7 +185,7 @@ func TestReserve(t *testing.T) {
 			t.Parallel()
 			ring := o.NewRing(test.cap)
 			for i := 0; i < test.fill; i++ {
-				o.ForcePush(ring)
+				ring.ForcePush()
 			}
 			for i := 0; i < test.read; i++ {
 				ring.Shift()

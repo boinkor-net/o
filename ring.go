@@ -73,7 +73,7 @@ type ringBackend interface {
 // ForcePush forces a new element onto the ring, discarding the oldest
 // element if the ring is full. It returns the index of the inserted
 // element.
-func ForcePush(r Ring) uint {
+func (r Ring) ForcePush() uint {
 	if r.Full() {
 		_, _ = r.Shift()
 	}
