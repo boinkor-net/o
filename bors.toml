@@ -3,6 +3,7 @@
 
 status = [
   "ci/circleci: ci_success",
+  "codecov/project",
 ]
 timeout_sec = 300
 delete_merged_branches = true
