@@ -133,3 +133,11 @@ func TestString(t *testing.T) {
 	assert.Equal(t, io.EOF, err)
 	assert.Equal(t, 0, n)
 }
+
+func TestZero(t *testing.T) {
+	t.Parallel()
+	b := New(0, false)
+	n, err := b.Write([]byte("welp"))
+	assert.Equal(t, o.ErrFull, err)
+	assert.Equal(t, 0, n)
+}
