@@ -60,9 +60,8 @@ func (r Ring) Consume() (first Range, second Range) {
 // PushN bulk-pushes count indexes onto the end of the Ring and
 // returns ranges covering the indexes that were pushed.
 //
-// If the Ring can not accomodate all elements before filling up,
-// PushN will return ErrFull; the ranges in this case are
-// meaningless.
+// If the Ring can not accommodate all elements before filling up,
+// PushN will return ErrFull; the ranges in this case are meaningless.
 func (r Ring) PushN(count uint) (first, second Range, err error) {
 	if count == 0 {
 		return
