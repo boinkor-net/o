@@ -12,21 +12,12 @@ jobs:
           name: deps
           command: |
             go get -v -t -d ./...
-            go get -v -u golang.org/x/lint/golint
-            go get -v -u github.com/kisielk/errcheck
+            # golangci-lint:
+            env GO111MODULE=on go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.15.0
       - run:
-          name: gofmt
+          name: golangci-lint
           command: |
-            gofmt -w .
-            git add . && git diff --cached && git diff-index --cached --exit-code HEAD
-      - run:
-          name: errcheck
-          command: |
-            errcheck -ignoretests ./...
-      - run:
-          name: golint
-          command: |
-            golint -set_exit_status ./...
+            golangci-lint run -E goimports
 
   tests:
     docker:
