@@ -2,20 +2,31 @@ version: 2.1
 orbs:
   codecov: codecov/codecov@1.0.2
 jobs:
-  gofmt:
+  lints:
     docker:
       - image: circleci/golang:1.9
     working_directory: /go/src/github.com/antifuchs/o
     steps:
       - checkout
       - run:
+          name: deps
+          command: |
+            go get -v -t -d ./...
+            go get -v -u golang.org/x/lint/golint
+            go get -v -u github.com/kisielk/errcheck
+      - run:
           name: gofmt
           command: |
             gofmt -w .
-      - run:
-          name: Check for differences
-          command: |
             git add . && git diff --cached && git diff-index --cached --exit-code HEAD
+      - run:
+          name: errcheck
+          command: |
+            errcheck -ignoretests ./...
+      - run:
+          name: golint
+          command: |
+            golint -set_exit_status ./...
 
   tests:
     docker:
@@ -93,11 +104,11 @@ workflows:
   version: 2
   continuous_integration:
     jobs:
-      - gofmt
       - tests
       - benchmarks
+      - lints
       - ci_success:
           requires:
-            - gofmt
             - tests
             - benchmarks
+            - lints
