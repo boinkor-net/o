@@ -41,6 +41,9 @@ jobs:
             for d in $(go list ./... | grep -v vendor); do
                 go test -race -coverprofile=/tmp/coverage/$(echo "$d" | tr / _) -timeout=60s -coverpkg="$srcpkg" -v $d
             done
+      - run:
+          name: "Merge coverage"
+          command: |
             gocovmerge /tmp/coverage/* > /tmp/coverage.txt
             go tool cover -html=/tmp/coverage.txt -o /tmp/artifacts/coverage.html
       - store_artifacts:
@@ -64,10 +67,19 @@ jobs:
           name: deps
           command: |
             go get -v -t -d ./...
+            go get github.com/cespare/prettybench
       - run:
           name: Run benchmarks
           command: |
-            go test -run '^$' -bench . -v ./...
+            go test -run '^$' -bench . -v ./... | tee /tmp/benchmarks.txt
+      - run:
+          name: prettybench
+          command: |
+            mkdir -p /tmp/artifacts
+            prettybench < /tmp/benchmarks.txt | tee /tmp/artifacts/benchmarks.txt
+      - store_artifacts:
+          path: /tmp/artifacts
+          destination: /
 
   ci_success:
     docker:
