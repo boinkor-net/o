@@ -46,14 +46,14 @@ func (b *Bounded) Write(p []byte) (n int, err error) {
 
 	n = len(p)
 	reserve := uint(len(p))
-	remaining := uint(len(b.buf)) - b.r.Size()
+	remaining := b.r.Capacity() - b.r.Size()
 	if remaining < uint(len(p)) {
 		if !b.overwrite {
 			return 0, o.ErrFull
 		}
 		// consume the bytes that we're over and reset input
 		// to fit:
-		p = p[len(p)-len(b.buf) : len(p)]
+		p = p[reserve-b.r.Capacity() : len(p)]
 		for i := uint(0); i <= b.r.Size(); i++ {
 			b.r.Shift()
 		}

@@ -71,6 +71,13 @@ type ringBackend interface {
 	pushN(n uint) (start uint, end uint, err error)
 }
 
+// Capacity returns the number of continuous indexes that can be
+// represented on the ring. IOW, it returns the highest possible
+// index+1.
+func (r Ring) Capacity() uint {
+	return r.capacity()
+}
+
 // ForcePush forces a new element onto the ring, discarding the oldest
 // element if the ring is full. It returns the index of the inserted
 // element.
