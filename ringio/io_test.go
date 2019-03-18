@@ -1,7 +1,6 @@
 package ringio
 
 import (
-	"io"
 	"testing"
 
 	"github.com/antifuchs/o"
@@ -70,15 +69,15 @@ func TestParallel(t *testing.T) {
 		if err == o.ErrEmpty {
 			continue
 		}
-		if err == io.EOF {
-			break
-		}
 		require.NoError(t, err)
 		switch n {
 		case 3:
 			assert.Equal(t, []byte("abc"), didRead[0:3])
 		case 6:
 			assert.Equal(t, []byte("abcabc"), didRead)
+		case 0:
+			// nothing available, try again
+			i--
 		default:
 			t.Fatalf("Read %d bytes, expected 3 or 6", n)
 		}
@@ -102,7 +101,7 @@ func TestReset(t *testing.T) {
 	b.Reset()
 
 	n, err = b.Read(read)
-	assert.Equal(t, io.EOF, err)
+	assert.NoError(t, err)
 	assert.Equal(t, 0, n)
 }
 
@@ -116,7 +115,7 @@ func TestBytes(t *testing.T) {
 	assert.Equal(t, []byte("test"), b.Bytes())
 	read := make([]byte, 4)
 	n, err = b.Read(read)
-	assert.Equal(t, io.EOF, err)
+	assert.NoError(t, err)
 	assert.Equal(t, 0, n)
 }
 
@@ -130,7 +129,7 @@ func TestString(t *testing.T) {
 	assert.Equal(t, "test", b.String())
 	read := make([]byte, 4)
 	n, err = b.Read(read)
-	assert.Equal(t, io.EOF, err)
+	assert.NoError(t, err)
 	assert.Equal(t, 0, n)
 }
 

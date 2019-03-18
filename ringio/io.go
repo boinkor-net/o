@@ -3,7 +3,6 @@
 package ringio
 
 import (
-	"io"
 	"sync"
 
 	"github.com/antifuchs/o"
@@ -70,7 +69,7 @@ func (b *Bounded) Read(p []byte) (n int, err error) {
 	defer b.Unlock()
 
 	if b.r.Empty() {
-		return 0, io.EOF
+		return 0, nil
 	}
 
 	var i uint
