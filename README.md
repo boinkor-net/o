@@ -36,8 +36,8 @@ find an example in the `ringio` package implemented here. These
 functions return errors if you push onto a full ring, or if you shift
 from an empty ring.
 
-You can also use `o.ForcePush` to insert a new element regardless of
-whether the ring is full, overwriting the element that's there.
+You can also use `Ring.ForcePush` to insert a new element regardless
+of whether the ring is full, overwriting the element that's there.
 
 And then, if you do not want to shift out elements to read them, you
 can use `o.ScanFIFO` and `o.ScanLIFO` to get an iterator over the
