@@ -72,4 +72,4 @@ func (r *basicRing) Size() uint {
 	return r.length
 }
 
-var _ Ring = &basicRing{}
+var _ ringBackend = &basicRing{}

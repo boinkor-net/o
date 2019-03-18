@@ -65,4 +65,4 @@ func (r *maskRing) Size() uint {
 	return r.write - r.read
 }
 
-var _ Ring = &maskRing{}
+var _ ringBackend = &maskRing{}

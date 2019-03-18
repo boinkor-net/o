@@ -21,7 +21,11 @@ const ErrEmpty emptyErr = iota
 const ErrFull fullErr = iota
 
 // Ring provides accounting functions for ring buffers.
-type Ring interface {
+type Ring struct {
+	ringBackend
+}
+
+type ringBackend interface {
 	// Push lets a writer account for a new element in the ring,
 	// and returns that element's index.
 	//
@@ -83,9 +87,9 @@ func ForcePush(r Ring) uint {
 // general modulo division for its integer math.
 func NewRing(cap uint) Ring {
 	if bits.OnesCount(cap) == 1 {
-		return &maskRing{cap: cap}
+		return Ring{&maskRing{cap: cap}}
 	}
-	return &basicRing{cap: cap}
+	return Ring{&basicRing{cap: cap}}
 }
 
 // A type, usually a collection, that has length. This is inspired by
