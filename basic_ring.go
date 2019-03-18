@@ -40,22 +40,23 @@ func (r *basicRing) pushN(n uint) (uint, uint, error) {
 	return r.mask(r.read + start), r.mask(r.read + r.length), nil
 }
 
+func (r *basicRing) shiftN(n uint) (uint, uint, error) {
+	start := r.read
+	if n > r.size() {
+		return start, start, ErrEmpty
+	}
+	r.length -= n
+	//i := r.read
+	r.read = r.mask(r.read + n)
+	return start, r.read, nil
+}
+
 func (r *basicRing) full() bool {
 	return r.cap == r.length
 }
 
 func (r *basicRing) empty() bool {
 	return r.length == 0
-}
-
-func (r *basicRing) shift() (uint, error) {
-	if r.empty() {
-		return 0, ErrEmpty
-	}
-	r.length--
-	i := r.read
-	r.read = r.mask(r.read + 1)
-	return i, nil
 }
 
 func (r *basicRing) size() uint {

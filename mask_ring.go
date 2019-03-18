@@ -34,21 +34,21 @@ func (r *maskRing) pushN(n uint) (uint, uint, error) {
 	return r.mask(start), r.mask(r.write), nil
 }
 
+func (r *maskRing) shiftN(n uint) (uint, uint, error) {
+	start := r.mask(r.read)
+	if n > r.size() {
+		return start, start, ErrEmpty
+	}
+	r.read += n
+	return start, r.mask(r.read), nil
+}
+
 func (r *maskRing) full() bool {
 	return r.size() == r.cap
 }
 
 func (r *maskRing) empty() bool {
 	return r.read == r.write
-}
-
-func (r *maskRing) shift() (uint, error) {
-	if r.empty() {
-		return 0, ErrEmpty
-	}
-	i := r.read
-	r.read++
-	return r.mask(i), nil
 }
 
 func (r *maskRing) size() uint {

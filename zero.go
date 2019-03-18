@@ -4,8 +4,8 @@ package o
 // special because we really would like to avoid division by zero.
 type zeroRing struct{}
 
-func (z zeroRing) shift() (uint, error) {
-	return 0, ErrEmpty
+func (z zeroRing) shiftN(uint) (uint, uint, error) {
+	return 0, 0, ErrEmpty
 }
 
 func (z zeroRing) full() bool {

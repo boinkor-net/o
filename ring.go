@@ -28,8 +28,6 @@ type Ring struct {
 // Defines the functions implementations of the accountancy algorithms
 // need to provide.
 type ringBackend interface {
-	shift() (uint, error)
-
 	full() bool
 
 	empty() bool
@@ -55,6 +53,11 @@ type ringBackend interface {
 	// elements can be inserted, does not push them and returns
 	// only ErrNotFound.
 	pushN(n uint) (start uint, end uint, err error)
+
+	// shiftN "reads" n continuous indexes from the ring and
+	// returns the first and last (masked) index. If n is larger
+	// than the ring's Size, returns zeroes and ErrEmpty.
+	shiftN(n uint) (start uint, end uint, err error)
 }
 
 // Capacity returns the number of continuous indexes that can be
@@ -141,7 +144,8 @@ func (r Ring) Push() (uint, error) {
 //
 // Returns ErrEmpty if the ring has no elements to read.
 func (r Ring) Shift() (uint, error) {
-	return r.shift()
+	start, _, err := r.shiftN(1)
+	return start, err
 }
 
 // Size returns the number of elements in the ring buffer.
