@@ -1,6 +1,7 @@
 package o_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/antifuchs/o"
@@ -26,9 +27,55 @@ func TestPropShiftPushes(t *testing.T) {
 			}
 			return true
 		},
-		gen.UInt().SuchThat(func(x uint) bool { return x > 0 }).WithLabel("ring size"),
+		gen.UInt().WithLabel("ring size"),
 		gen.UIntRange(1, 257*90).WithLabel("number of entries made"),
-	),
-	)
+	))
+	properties.TestingRun(t)
+}
+
+func TestPropBounds(t *testing.T) {
+	params := gopter.DefaultTestParameters()
+	params.MinSuccessfulTests = 1000
+	properties := gopter.NewProperties(params)
+
+	properties.Property("Read own writes", prop.ForAll(
+		func(ringSize, entries uint) string {
+			ring := o.NewRing(ringSize)
+
+			wFirst, wSecond, err := ring.PushN(entries)
+			if entries > ringSize {
+				if err == nil {
+					return "should have errored"
+				}
+				return ""
+			}
+
+			if entries == 0 {
+				if !ring.Empty() {
+					return "should be empty"
+				}
+				return ""
+			}
+
+			if entries == ringSize && !ring.Full() {
+				return "should be full"
+			}
+
+			if entries < ringSize && ring.Full() {
+				return "should not be full"
+			}
+
+			first, second := ring.Consume()
+			if (wFirst.Start != first.Start && first.End != wFirst.End+1) ||
+				(!second.Empty() && wSecond.Start != second.Start && second.End != wSecond.End+1) {
+				return fmt.Sprintf("Expected same ranges, but\n%#v %#v\n%#v %#v",
+					wFirst, wSecond, first, second)
+			}
+
+			return ""
+		},
+		gen.UInt().WithLabel("ring size"),
+		gen.UIntRange(0, 257*90).WithLabel("number of entries made"),
+	))
 	properties.TestingRun(t)
 }

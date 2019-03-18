@@ -11,7 +11,7 @@ import (
 func TestForcePush(t *testing.T) {
 	r := NewRing(1)
 	r.Push()
-	assert.Equal(t, ForcePush(r), uint(0))
+	assert.Equal(t, uint(0), r.ForcePush())
 }
 
 func TestPushAndShift(t *testing.T) {

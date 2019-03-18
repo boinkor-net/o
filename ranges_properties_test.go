@@ -10,7 +10,7 @@ import (
 	"github.com/leanovate/gopter/prop"
 )
 
-func TestPropMatchingRanges(t *testing.T) {
+func TestPropFIFOandLIFOMatch(t *testing.T) {
 	params := gopter.DefaultTestParameters()
 	params.MinSuccessfulTests = 1000
 	properties := gopter.NewProperties(params)
@@ -19,7 +19,7 @@ func TestPropMatchingRanges(t *testing.T) {
 			ring := o.NewRing(cap)
 			insert := cap + overage
 			for i := uint(0); i < insert; i++ {
-				o.ForcePush(ring)
+				ring.ForcePush()
 			}
 			if ring.Size() != cap {
 				return "Size does not match cap"
@@ -40,6 +40,11 @@ func TestPropMatchingRanges(t *testing.T) {
 			if len(lifo) != len(fifo) {
 				return "Length mismatch between lifo&fifo order"
 			}
+			if len(lifo) == 0 {
+				// nothing else to check
+				return ""
+			}
+
 			last := lifo[0]
 			for nth, _ := range lifo {
 				if lifo[nth] != fifo[len(fifo)-1-nth] {
@@ -52,7 +57,7 @@ func TestPropMatchingRanges(t *testing.T) {
 			}
 			return ""
 		},
-		gen.UIntRange(1, 2000).SuchThat(func(x uint) bool { return x > 0 }).WithLabel("ring size"),
+		gen.UIntRange(0, 2000).WithLabel("ring size"),
 		gen.UIntRange(1, 100).WithLabel("overflow"),
 	))
 	properties.TestingRun(t)
@@ -67,7 +72,7 @@ func TestPropReserve(t *testing.T) {
 			ring := o.NewRing(cap)
 			var startIdx uint
 			for i := uint(0); i < fill; i++ {
-				startIdx = ring.Mask(o.ForcePush(ring) + 1)
+				startIdx = ring.Mask(ring.ForcePush() + 1)
 			}
 			for i := uint(0); i < read; i++ {
 				ring.Shift()
@@ -75,7 +80,7 @@ func TestPropReserve(t *testing.T) {
 			startSize := ring.Size()
 			overflows := startSize+reserve > cap
 
-			first, second, err := o.Reserve(ring, reserve)
+			first, second, err := ring.PushN(reserve)
 			reservedAny := !first.Empty() || !second.Empty()
 			if overflows && err == nil {
 				return "expected error"
@@ -84,12 +89,12 @@ func TestPropReserve(t *testing.T) {
 				return "unexpected error"
 			}
 
+			if overflows && reservedAny {
+				return fmt.Sprintf("would overflow, but reserved %d elements:\n%#v %#v",
+					first.Length()+second.Length(), first, second)
+			}
 			if !overflows && first.Length()+second.Length() != reserve {
 				return fmt.Sprintf("did not reserve %d elements:\n%#v %#v",
-					reserve, first, second)
-			}
-			if overflows && first.Length()+second.Length() != cap-startSize {
-				return fmt.Sprintf("overflowing, did not reserve %d elements:\n%#v %#v",
 					reserve, first, second)
 			}
 			if reservedAny && startIdx != first.Start {
@@ -114,7 +119,7 @@ func TestPropReserve(t *testing.T) {
 			}
 			return ""
 		},
-		gen.UIntRange(1, 2000).SuchThat(func(x uint) bool { return x > 0 }).WithLabel("ring size"),
+		gen.UIntRange(0, 2000).WithLabel("ring size"),
 		gen.UIntRange(0, 100).WithLabel("elements to fill in"),
 		gen.UIntRange(0, 100).WithLabel("elements to read"),
 		gen.UIntRange(0, 100).WithLabel("elements to reserve"),

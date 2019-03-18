@@ -4,12 +4,12 @@ type maskRing struct {
 	cap, read, write uint
 }
 
-func (r *maskRing) Mask(val uint) uint {
+func (r *maskRing) mask(val uint) uint {
 	return val & (r.cap - 1)
 }
 
 func (r *maskRing) start() uint {
-	return r.Mask(r.read)
+	return r.mask(r.read)
 }
 
 func (r *maskRing) reset() {
@@ -21,48 +21,38 @@ func (r *maskRing) capacity() uint {
 }
 
 func (r *maskRing) end() uint {
-	return r.Mask(r.write)
+	return r.mask(r.write)
 }
 
-func (r *maskRing) add(n uint) (uint, error) {
-	space := r.cap - r.Size()
-	if n > space {
-		r.write += space
-		return space, ErrFull
+func (r *maskRing) pushN(n uint) (uint, uint, error) {
+	start := r.write
+	if n > r.cap-r.size() {
+		i := r.mask(start)
+		return i, i, ErrFull
 	}
 	r.write += n
-	return n, nil
+	return r.mask(start), r.mask(r.write), nil
 }
 
-func (r *maskRing) Full() bool {
-	return r.Size() == r.cap
+func (r *maskRing) shiftN(n uint) (uint, uint, error) {
+	start := r.mask(r.read)
+	if n > r.size() {
+		return start, start, ErrEmpty
+	}
+	r.read += n
+	return start, r.mask(r.read), nil
 }
 
-func (r *maskRing) Empty() bool {
+func (r *maskRing) full() bool {
+	return r.size() == r.cap
+}
+
+func (r *maskRing) empty() bool {
 	return r.read == r.write
 }
 
-func (r *maskRing) Push() (uint, error) {
-	if r.Full() {
-		return 0, ErrFull
-	}
-	i := r.write
-	r.write++
-
-	return r.Mask(i), nil
-}
-
-func (r *maskRing) Shift() (uint, error) {
-	if r.Empty() {
-		return 0, ErrEmpty
-	}
-	i := r.read
-	r.read++
-	return r.Mask(i), nil
-}
-
-func (r *maskRing) Size() uint {
+func (r *maskRing) size() uint {
 	return r.write - r.read
 }
 
-var _ Ring = &maskRing{}
+var _ ringBackend = &maskRing{}

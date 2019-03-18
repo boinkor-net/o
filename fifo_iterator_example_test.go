@@ -10,7 +10,7 @@ func ExampleScanFIFO() {
 	ring := o.NewRing(17)
 	// Put stuff in the ring:
 	for i := 0; i < 19; i++ {
-		o.ForcePush(ring)
+		ring.ForcePush()
 	}
 
 	// Now find all the indexes in last-in/first-out order:

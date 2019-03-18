@@ -3,7 +3,6 @@
 package ringio
 
 import (
-	"io"
 	"sync"
 
 	"github.com/antifuchs/o"
@@ -32,8 +31,8 @@ func (bs byteSlice) Len() int {
 // overwrite is true, a full ring buffer will discard unread bytes and
 // overwrite them upon writes.
 //
-// Otherwise, writes on a full ring buffer will fill up the buffer
-// with as much data as they can and then return io.ErrShortWrite.
+// If overwrite is false, writing more bytes than there is space in
+// the buffer will fail with ErrFull and no bytes will be written.
 func New(cap uint, overwrite bool) *Bounded {
 	buf := make([]byte, cap)
 	ring := o.NewRingForSlice(byteSlice(buf))
@@ -45,22 +44,21 @@ func (b *Bounded) Write(p []byte) (n int, err error) {
 	defer b.Unlock()
 
 	n = len(p)
-	remaining := uint(len(b.buf)) - b.r.Size()
-	if b.overwrite && remaining < uint(len(p)) {
+	reserve := uint(len(p))
+	remaining := b.r.Capacity() - b.r.Size()
+	if remaining < uint(len(p)) {
+		if !b.overwrite {
+			return 0, o.ErrFull
+		}
 		// consume the bytes that we're over and reset input
 		// to fit:
-		p = p[len(p)-len(b.buf) : len(p)]
+		p = p[reserve-b.r.Capacity() : len(p)]
 		for i := uint(0); i <= b.r.Size(); i++ {
 			b.r.Shift()
 		}
+		reserve = uint(len(p))
 	}
-	first, second, resErr := o.Reserve(b.r, uint(len(p)))
-	if !b.overwrite {
-		n = int(first.Length() + second.Length())
-		if resErr != nil {
-			err = io.ErrShortWrite
-		}
-	}
+	first, second, _ := b.r.PushN(reserve)
 	copy(b.buf[first.Start:first.End], p[0:first.Length()])
 	copy(b.buf[second.Start:second.End], p[first.Length():len(p)])
 	return
@@ -71,21 +69,18 @@ func (b *Bounded) Read(p []byte) (n int, err error) {
 	defer b.Unlock()
 
 	if b.r.Empty() {
-		return 0, io.EOF
+		return 0, nil
 	}
 
-	var i uint
-	for {
-		if n >= len(p) {
-			return
-		}
-		i, err = b.r.Shift()
-		if err == o.ErrEmpty {
-			return n, nil
-		}
-		p[n] = b.buf[i]
-		n++
+	n = int(b.r.Size())
+	if n > len(p) {
+		n = len(p)
 	}
+	var first, second o.Range
+	first, second, err = b.r.ShiftN(uint(n))
+	copy(p[0:first.Length()], b.buf[first.Start:first.End])
+	copy(p[first.Length():], b.buf[second.Start:second.End])
+	return
 }
 
 func (b *Bounded) reset() {
@@ -105,7 +100,7 @@ func (b *Bounded) Bytes() []byte {
 	b.Lock()
 	defer b.Unlock()
 
-	first, second := o.Consume(b.r)
+	first, second := b.r.Consume()
 	val := make([]byte, first.Length()+second.Length())
 	copy(val, b.buf[first.Start:first.End])
 	copy(val[first.End:], b.buf[second.Start:second.End])

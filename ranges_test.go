@@ -27,7 +27,7 @@ func TestLIFO(t *testing.T) {
 			results := make([]uint, 0, len(test.expected))
 			var i uint
 			for i = 0; i < test.cycles; i++ {
-				o.ForcePush(test.ra)
+				test.ra.ForcePush()
 			}
 			s := o.ScanLIFO(test.ra)
 			for s.Next() {
@@ -58,7 +58,7 @@ func TestFIFO(t *testing.T) {
 			results := make([]uint, 0, len(test.expected))
 			var i uint
 			for i = 0; i < test.cycles; i++ {
-				o.ForcePush(test.ra)
+				test.ra.ForcePush()
 			}
 			s := o.ScanFIFO(test.ra)
 			for s.Next() {
@@ -92,10 +92,10 @@ func TestInspect(t *testing.T) {
 			t.Parallel()
 			var i uint
 			for i = 0; i < test.cycles; i++ {
-				o.ForcePush(test.ra)
+				test.ra.ForcePush()
 			}
 			before := test.ra.Size()
-			first, second := o.Inspect(test.ra)
+			first, second := test.ra.Inspect()
 			t.Logf("%#v", test.ra)
 			assert.Equal(t, test.first, first, "first")
 			assert.Equal(t, test.second, second, "second")
@@ -127,9 +127,9 @@ func TestConsume(t *testing.T) {
 			t.Parallel()
 			var i uint
 			for i = 0; i < test.cycles; i++ {
-				o.ForcePush(test.ra)
+				test.ra.ForcePush()
 			}
-			first, second := o.Consume(test.ra)
+			first, second := test.ra.Consume()
 			t.Logf("%#v", test.ra)
 			assert.Equal(t, test.first, first, "first")
 			assert.Equal(t, test.second, second, "second")
@@ -138,13 +138,13 @@ func TestConsume(t *testing.T) {
 	}
 }
 
-func TestReserve(t *testing.T) {
+func TestPushN(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
 		name          string
 		cap           uint
 		fill          int
-		read          int
+		read          uint
 		add           uint
 		first, second o.Range
 		err           error
@@ -153,14 +153,14 @@ func TestReserve(t *testing.T) {
 			name:  "basic5/13",
 			cap:   5,
 			add:   13,
-			first: o.Range{0, 5}, second: o.Range{0, 0},
+			first: o.Range{0, 0}, second: o.Range{0, 0},
 			err: o.ErrFull,
 		},
 		{
 			name:  "mask4/13",
 			cap:   4,
 			add:   13,
-			first: o.Range{0, 4}, second: o.Range{0, 0},
+			first: o.Range{0, 0}, second: o.Range{0, 0},
 			err: o.ErrFull,
 		},
 		{
@@ -175,7 +175,7 @@ func TestReserve(t *testing.T) {
 			fill:  4,
 			read:  2,
 			add:   13,
-			first: o.Range{4, 5}, second: o.Range{0, 2},
+			first: o.Range{4, 4}, second: o.Range{0, 0},
 			err: o.ErrFull,
 		},
 	}
@@ -185,17 +185,97 @@ func TestReserve(t *testing.T) {
 			t.Parallel()
 			ring := o.NewRing(test.cap)
 			for i := 0; i < test.fill; i++ {
-				o.ForcePush(ring)
+				ring.ForcePush()
 			}
-			for i := 0; i < test.read; i++ {
+			for i := uint(0); i < test.read; i++ {
 				ring.Shift()
 			}
 
-			first, second, err := o.Reserve(ring, test.add)
-			t.Log("Reserve:", first, second, err)
+			first, second, err := ring.PushN(test.add)
 			assert.Equal(t, test.first, first, "first")
 			assert.Equal(t, test.second, second, "second")
 			assert.Equal(t, test.err, err)
+			if err == nil {
+				assert.Equal(t, test.read, first.Length()+second.Length())
+			}
+		})
+	}
+}
+
+func TestShiftN(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name          string
+		cap           uint
+		fill          int
+		skip          uint
+		read          uint
+		first, second o.Range
+		err           error
+	}{
+		{
+			name:  "basic5/13",
+			cap:   5,
+			fill:  3,
+			read:  13,
+			first: o.Range{0, 0}, second: o.Range{0, 0},
+			err: o.ErrEmpty,
+		},
+		{
+			name:  "mask4/13",
+			cap:   4,
+			fill:  3,
+			read:  13,
+			first: o.Range{0, 0}, second: o.Range{0, 0},
+			err: o.ErrEmpty,
+		},
+		{
+			name:  "zero",
+			cap:   4,
+			read:  0,
+			first: o.Range{0, 0}, second: o.Range{0, 0},
+		},
+		{
+			name:  "centered",
+			cap:   5,
+			fill:  4,
+			read:  2,
+			first: o.Range{0, 2}, second: o.Range{0, 0},
+		},
+		{
+			name:  "start",
+			cap:   8,
+			fill:  4,
+			read:  3,
+			first: o.Range{0, 3}, second: o.Range{0, 0},
+		},
+		{
+			name:  "two-ended",
+			cap:   9,
+			fill:  12,
+			skip:  3,
+			read:  6,
+			first: o.Range{6, 9}, second: o.Range{0, 3},
+		},
+	}
+	for _, elt := range tests {
+		test := elt
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			ring := o.NewRing(test.cap)
+			for i := 0; i < test.fill; i++ {
+				ring.ForcePush()
+			}
+			for i := uint(0); i < test.skip; i++ {
+				ring.Shift()
+			}
+			first, second, err := ring.ShiftN(test.read)
+			assert.Equal(t, test.err, err)
+			if err == nil {
+				assert.Equal(t, test.read, first.Length()+second.Length())
+			}
+			assert.Equal(t, test.first, first, "first")
+			assert.Equal(t, test.second, second, "second")
 		})
 	}
 }

@@ -32,17 +32,17 @@ func (r Range) Length() uint {
 // accurate picture of the occupied elements. The second range may be
 // empty (Start & Length = 0) if there is nothing occupied on the left
 // part of the buffer.
-func Inspect(ring Ring) (first Range, second Range) {
-	if ring.Empty() {
+func (r Ring) Inspect() (first Range, second Range) {
+	if r.Empty() {
 		return
 	}
-	first.Start = ring.start()
-	end1 := ring.end()
+	first.Start = r.start()
+	end1 := r.end()
 
 	first.End = end1 + 1
 	if end1 <= first.Start {
 		second.End = end1
-		first.End = ring.capacity()
+		first.End = r.capacity()
 	}
 	return
 }
@@ -52,31 +52,50 @@ func Inspect(ring Ring) (first Range, second Range) {
 // were occupied in the ring prior to resetting.
 //
 // See also Inspect.
-func Consume(ring Ring) (first Range, second Range) {
-	defer ring.reset()
-	return Inspect(ring)
+func (r Ring) Consume() (first Range, second Range) {
+	defer r.reset()
+	return r.Inspect()
 }
 
-// Reserve bulk-pushes count indexes onto the Ring and returns ranges
-// covering the indexes that were successfully pushed.
+// PushN bulk-pushes count indexes onto the end of the Ring and
+// returns ranges covering the indexes that were pushed.
 //
-// If the Ring can only accomodate fewer elements before filling up,
-// Reserve will reserve the elements it can, then return those ranges
-// and ErrFull.
-func Reserve(ring Ring, count uint) (first, second Range, err error) {
+// If the Ring can not accomodate all elements before filling up,
+// PushN will return ErrFull; the ranges in this case are
+// meaningless.
+func (r Ring) PushN(count uint) (first, second Range, err error) {
 	if count == 0 {
 		return
 	}
-	first.Start = ring.end()
+	first.Start = r.end()
 
-	var added uint
-	added, err = ring.add(count)
-	end1 := ring.Mask(first.Start + added)
+	first.Start, first.End, err = r.pushN(count)
+	if err != nil {
+		return
+	}
+	if first.End <= first.Start && count > 0 {
+		second.End = first.End
+		first.End = r.capacity()
+	}
+	return
+}
 
-	first.End = end1
-	if end1 <= first.Start && added > 0 {
-		second.End = end1
-		first.End = ring.capacity()
+// ShiftN bulk-"read"s count indexes from the start of the Ring and
+// returns ranges covering the indexes that were removed.
+//
+// If the Ring holds only fewer elements as requested, ShiftN will
+// return ErrFull; the ranges returned in this case are meaningless.
+func (r Ring) ShiftN(count uint) (first, second Range, err error) {
+	if count == 0 {
+		return
+	}
+	first.Start, first.End, err = r.shiftN(count)
+	if err != nil {
+		return
+	}
+	if first.End <= first.Start && count > 0 {
+		second.End = first.End
+		first.End = r.capacity()
 	}
 	return
 }
@@ -93,14 +112,14 @@ type Scanner struct {
 // ScanLIFO returns a Scanner for the given Ring that iterates over
 // the occupied indexes in LIFO (oldest to newest) direction.
 func ScanLIFO(ring Ring) *Scanner {
-	first, second := Inspect(ring)
+	first, second := ring.Inspect()
 	return &Scanner{first.Start, []Range{first, second}, false}
 }
 
 // ScanFIFO returns a Scanner for the given Ring that iterates over
 // the occupied indexes in FIFO (newest to oldest) direction.
 func ScanFIFO(ring Ring) *Scanner {
-	first, second := Inspect(ring)
+	first, second := ring.Inspect()
 	return &Scanner{second.End, []Range{second, first}, true}
 }
 

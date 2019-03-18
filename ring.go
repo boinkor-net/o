@@ -21,30 +21,20 @@ const ErrEmpty emptyErr = iota
 const ErrFull fullErr = iota
 
 // Ring provides accounting functions for ring buffers.
-type Ring interface {
-	// Push lets a writer account for a new element in the ring,
-	// and returns that element's index.
-	//
-	// Returns ErrFull if the ring is filled to capacity.
-	Push() (uint, error)
+type Ring struct {
+	ringBackend
+}
 
-	// Shift lets a reader account for removing an element from
-	// the ring for reading, returning that element's index.
-	//
-	// Returns ErrEmpty if the ring has no elements to read.
-	Shift() (uint, error)
+// Defines the functions implementations of the accountancy algorithms
+// need to provide.
+type ringBackend interface {
+	full() bool
 
-	// Full returns whether the ring buffer is at capacity.
-	Full() bool
+	empty() bool
 
-	// Empty returns whether the ring has zero element in it.
-	Empty() bool
+	size() uint
 
-	// Size returns the number of elements in the ring buffer.
-	Size() uint
-
-	// Mask adjusts an index value to fit the ring buffer.
-	Mask(uint) uint
+	mask(uint) uint
 
 	// start returns the index of first element that can be read.
 	start() uint
@@ -52,29 +42,61 @@ type Ring interface {
 	// end returns the index of the last element that can be read.
 	end() uint
 
-	// capacity returns the number of elements that the ring
-	// accounts for.
 	capacity() uint
 
 	// reset adjusts the difference between the read and write
 	// points of the ring back to 0.
 	reset()
 
-	// add accounts for n new elements in the ring. If fewer
-	// elements could be accounted for, only accounts for the ones
-	// that could fit and returns ErrFull.
-	add(n uint) (uint, error)
+	// pushN accounts for n new elements in the ring and returns
+	// the indexes of the first and last element. If not all
+	// elements can be inserted, does not push them and returns
+	// only ErrNotFound.
+	pushN(n uint) (start uint, end uint, err error)
+
+	// shiftN "reads" n continuous indexes from the ring and
+	// returns the first and last (masked) index. If n is larger
+	// than the ring's Size, returns zeroes and ErrEmpty.
+	shiftN(n uint) (start uint, end uint, err error)
+}
+
+// Capacity returns the number of continuous indexes that can be
+// represented on the ring. IOW, it returns the highest possible
+// index+1.
+func (r Ring) Capacity() uint {
+	return r.capacity()
+}
+
+// Empty returns whether the ring has zero element in it.
+func (r Ring) Empty() bool {
+	return r.empty()
 }
 
 // ForcePush forces a new element onto the ring, discarding the oldest
 // element if the ring is full. It returns the index of the inserted
 // element.
-func ForcePush(r Ring) uint {
-	if r.Full() {
+func (r Ring) ForcePush() uint {
+	if r.full() {
 		_, _ = r.Shift()
 	}
 	i, _ := r.Push()
 	return i
+}
+
+// Full returns whether the ring buffer is at capacity.
+func (r Ring) Full() bool {
+	return r.full()
+}
+
+// Mask adjusts an index value (which potentially exceeds the ring
+// buffer's Capacity) to fit the ring buffer and returns the adjusted
+// value.
+//
+// This method is probably most useful in tests, or when doing
+// low-level things not supported by o.Ring yet. If you find yourself
+// relying on this in code, please file a bug.
+func (r Ring) Mask(i uint) uint {
+	return r.mask(i)
 }
 
 // Returns a new Ring data structure with the given capacity. If cap
@@ -82,10 +104,13 @@ func ForcePush(r Ring) uint {
 // modulo-2 accesses. Otherwise, the returned data structure uses
 // general modulo division for its integer math.
 func NewRing(cap uint) Ring {
-	if bits.OnesCount(cap) == 1 {
-		return &maskRing{cap: cap}
+	if cap == 0 {
+		return Ring{zeroRing{}}
 	}
-	return &basicRing{cap: cap}
+	if bits.OnesCount(cap) == 1 {
+		return Ring{&maskRing{cap: cap}}
+	}
+	return Ring{&basicRing{cap: cap}}
 }
 
 // A type, usually a collection, that has length. This is inspired by
@@ -103,4 +128,27 @@ type Slice interface {
 // it.
 func NewRingForSlice(i Slice) Ring {
 	return NewRing(uint(i.Len()))
+}
+
+// Push lets a writer account for a new element in the ring,
+// and returns that element's index.
+//
+// Returns ErrFull if the ring is filled to capacity.
+func (r Ring) Push() (uint, error) {
+	start, _, err := r.pushN(1)
+	return start, err
+}
+
+// Shift lets a reader account for removing an element from
+// the ring for reading, returning that element's index.
+//
+// Returns ErrEmpty if the ring has no elements to read.
+func (r Ring) Shift() (uint, error) {
+	start, _, err := r.shiftN(1)
+	return start, err
+}
+
+// Size returns the number of elements in the ring buffer.
+func (r Ring) Size() uint {
+	return r.size()
 }

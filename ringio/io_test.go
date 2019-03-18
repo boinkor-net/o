@@ -1,7 +1,6 @@
 package ringio
 
 import (
-	"io"
 	"testing"
 
 	"github.com/antifuchs/o"
@@ -19,13 +18,13 @@ func TestReadBoundedWrites(t *testing.T) {
 
 	n, err = b.Write([]byte("this will hit the capacity of the buffer"))
 	assert.Error(t, err)
-	assert.Equal(t, io.ErrShortWrite, err)
-	assert.Equal(t, 7, n)
+	assert.Equal(t, o.ErrFull, err)
+	assert.Equal(t, 0, n)
 
 	buf := make([]byte, 9)
 	n, err = b.Read(buf)
 	assert.NoError(t, err)
-	assert.Equal(t, []byte("hithis wi"), buf)
+	assert.Equal(t, []byte("hi"), buf[0:n])
 }
 
 func TestReadOverwrites(t *testing.T) {
@@ -70,15 +69,15 @@ func TestParallel(t *testing.T) {
 		if err == o.ErrEmpty {
 			continue
 		}
-		if err == io.EOF {
-			break
-		}
 		require.NoError(t, err)
 		switch n {
 		case 3:
 			assert.Equal(t, []byte("abc"), didRead[0:3])
 		case 6:
 			assert.Equal(t, []byte("abcabc"), didRead)
+		case 0:
+			// nothing available, try again
+			i--
 		default:
 			t.Fatalf("Read %d bytes, expected 3 or 6", n)
 		}
@@ -102,7 +101,7 @@ func TestReset(t *testing.T) {
 	b.Reset()
 
 	n, err = b.Read(read)
-	assert.Equal(t, io.EOF, err)
+	assert.NoError(t, err)
 	assert.Equal(t, 0, n)
 }
 
@@ -116,7 +115,7 @@ func TestBytes(t *testing.T) {
 	assert.Equal(t, []byte("test"), b.Bytes())
 	read := make([]byte, 4)
 	n, err = b.Read(read)
-	assert.Equal(t, io.EOF, err)
+	assert.NoError(t, err)
 	assert.Equal(t, 0, n)
 }
 
@@ -130,6 +129,14 @@ func TestString(t *testing.T) {
 	assert.Equal(t, "test", b.String())
 	read := make([]byte, 4)
 	n, err = b.Read(read)
-	assert.Equal(t, io.EOF, err)
+	assert.NoError(t, err)
+	assert.Equal(t, 0, n)
+}
+
+func TestZero(t *testing.T) {
+	t.Parallel()
+	b := New(0, false)
+	n, err := b.Write([]byte("welp"))
+	assert.Equal(t, o.ErrFull, err)
 	assert.Equal(t, 0, n)
 }
