@@ -5,7 +5,7 @@ package o
 type zeroRing struct{}
 
 func (z zeroRing) shift() (uint, error) {
-	return 0, ErrFull
+	return 0, ErrEmpty
 }
 
 func (z zeroRing) full() bool {
@@ -36,8 +36,7 @@ func (z zeroRing) capacity() uint {
 	return 0
 }
 
-func (z zeroRing) reset() {
-}
+func (z zeroRing) reset() {}
 
 func (z zeroRing) pushN(n uint) (start uint, end uint, err error) {
 	return 0, 0, ErrFull
