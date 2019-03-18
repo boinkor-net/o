@@ -10,7 +10,7 @@ type basicRing struct {
 	cap, read, length uint
 }
 
-func (r *basicRing) Mask(val uint) uint {
+func (r *basicRing) mask(val uint) uint {
 	return val % r.cap
 }
 
@@ -19,7 +19,7 @@ func (r *basicRing) start() uint {
 }
 
 func (r *basicRing) end() uint {
-	return r.Mask(r.read + r.length)
+	return r.mask(r.read + r.length)
 }
 
 func (r *basicRing) capacity() uint {
@@ -33,42 +33,32 @@ func (r *basicRing) reset() {
 func (r *basicRing) pushN(n uint) (uint, uint, error) {
 	start := r.length
 	if n > r.cap-r.length {
-		idx := r.Mask(r.read + start)
+		idx := r.mask(r.read + start)
 		return idx, idx, ErrFull
 	}
 	r.length += n
-	return r.Mask(r.read + start), r.Mask(r.read + r.length), nil
+	return r.mask(r.read + start), r.mask(r.read + r.length), nil
 }
 
-func (r *basicRing) Full() bool {
+func (r *basicRing) full() bool {
 	return r.cap == r.length
 }
 
-func (r *basicRing) Empty() bool {
+func (r *basicRing) empty() bool {
 	return r.length == 0
 }
 
-func (r *basicRing) Push() (uint, error) {
-	if r.Full() {
-		return 0, ErrFull
-	}
-	l := r.length
-	r.length++
-
-	return r.Mask(r.read + l), nil
-}
-
-func (r *basicRing) Shift() (uint, error) {
-	if r.Empty() {
+func (r *basicRing) shift() (uint, error) {
+	if r.empty() {
 		return 0, ErrEmpty
 	}
 	r.length--
 	i := r.read
-	r.read = r.Mask(r.read + 1)
+	r.read = r.mask(r.read + 1)
 	return i, nil
 }
 
-func (r *basicRing) Size() uint {
+func (r *basicRing) size() uint {
 	return r.length
 }
 

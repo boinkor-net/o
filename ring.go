@@ -25,30 +25,18 @@ type Ring struct {
 	ringBackend
 }
 
+// Defines the functions implementations of the accountancy algorithms
+// need to provide.
 type ringBackend interface {
-	// Push lets a writer account for a new element in the ring,
-	// and returns that element's index.
-	//
-	// Returns ErrFull if the ring is filled to capacity.
-	Push() (uint, error)
+	shift() (uint, error)
 
-	// Shift lets a reader account for removing an element from
-	// the ring for reading, returning that element's index.
-	//
-	// Returns ErrEmpty if the ring has no elements to read.
-	Shift() (uint, error)
+	full() bool
 
-	// Full returns whether the ring buffer is at capacity.
-	Full() bool
+	empty() bool
 
-	// Empty returns whether the ring has zero element in it.
-	Empty() bool
+	size() uint
 
-	// Size returns the number of elements in the ring buffer.
-	Size() uint
-
-	// Mask adjusts an index value to fit the ring buffer.
-	Mask(uint) uint
+	mask(uint) uint
 
 	// start returns the index of first element that can be read.
 	start() uint
@@ -56,8 +44,6 @@ type ringBackend interface {
 	// end returns the index of the last element that can be read.
 	end() uint
 
-	// capacity returns the number of elements that the ring
-	// accounts for.
 	capacity() uint
 
 	// reset adjusts the difference between the read and write
@@ -78,15 +64,36 @@ func (r Ring) Capacity() uint {
 	return r.capacity()
 }
 
+// Empty returns whether the ring has zero element in it.
+func (r Ring) Empty() bool {
+	return r.empty()
+}
+
 // ForcePush forces a new element onto the ring, discarding the oldest
 // element if the ring is full. It returns the index of the inserted
 // element.
 func (r Ring) ForcePush() uint {
-	if r.Full() {
+	if r.full() {
 		_, _ = r.Shift()
 	}
 	i, _ := r.Push()
 	return i
+}
+
+// Full returns whether the ring buffer is at capacity.
+func (r Ring) Full() bool {
+	return r.full()
+}
+
+// Mask adjusts an index value (which potentially exceeds the ring
+// buffer's Capacity) to fit the ring buffer and returns the adjusted
+// value.
+//
+// This method is probably most useful in tests, or when doing
+// low-level things not supported by o.Ring yet. If you find yourself
+// relying on this in code, please file a bug.
+func (r Ring) Mask(i uint) uint {
+	return r.mask(i)
 }
 
 // Returns a new Ring data structure with the given capacity. If cap
@@ -94,6 +101,9 @@ func (r Ring) ForcePush() uint {
 // modulo-2 accesses. Otherwise, the returned data structure uses
 // general modulo division for its integer math.
 func NewRing(cap uint) Ring {
+	if cap == 0 {
+		return Ring{zeroRing{}}
+	}
 	if bits.OnesCount(cap) == 1 {
 		return Ring{&maskRing{cap: cap}}
 	}
@@ -115,4 +125,26 @@ type Slice interface {
 // it.
 func NewRingForSlice(i Slice) Ring {
 	return NewRing(uint(i.Len()))
+}
+
+// Push lets a writer account for a new element in the ring,
+// and returns that element's index.
+//
+// Returns ErrFull if the ring is filled to capacity.
+func (r Ring) Push() (uint, error) {
+	start, _, err := r.pushN(1)
+	return start, err
+}
+
+// Shift lets a reader account for removing an element from
+// the ring for reading, returning that element's index.
+//
+// Returns ErrEmpty if the ring has no elements to read.
+func (r Ring) Shift() (uint, error) {
+	return r.shift()
+}
+
+// Size returns the number of elements in the ring buffer.
+func (r Ring) Size() uint {
+	return r.size()
 }
