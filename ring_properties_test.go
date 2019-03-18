@@ -26,7 +26,7 @@ func TestPropShiftPushes(t *testing.T) {
 			}
 			return true
 		},
-		gen.UInt().SuchThat(func(x uint) bool { return x > 0 }).WithLabel("ring size"),
+		gen.UInt().WithLabel("ring size"),
 		gen.UIntRange(1, 257*90).WithLabel("number of entries made"),
 	),
 	)

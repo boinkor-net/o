@@ -138,7 +138,7 @@ func TestConsume(t *testing.T) {
 	}
 }
 
-func TestReserve(t *testing.T) {
+func TestPushN(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
 		name          string
@@ -153,14 +153,14 @@ func TestReserve(t *testing.T) {
 			name:  "basic5/13",
 			cap:   5,
 			add:   13,
-			first: o.Range{0, 5}, second: o.Range{0, 0},
+			first: o.Range{0, 0}, second: o.Range{0, 0},
 			err: o.ErrFull,
 		},
 		{
 			name:  "mask4/13",
 			cap:   4,
 			add:   13,
-			first: o.Range{0, 4}, second: o.Range{0, 0},
+			first: o.Range{0, 0}, second: o.Range{0, 0},
 			err: o.ErrFull,
 		},
 		{
@@ -175,7 +175,7 @@ func TestReserve(t *testing.T) {
 			fill:  4,
 			read:  2,
 			add:   13,
-			first: o.Range{4, 5}, second: o.Range{0, 2},
+			first: o.Range{4, 4}, second: o.Range{0, 0},
 			err: o.ErrFull,
 		},
 	}
@@ -192,7 +192,6 @@ func TestReserve(t *testing.T) {
 			}
 
 			first, second, err := ring.PushN(test.add)
-			t.Log("Reserve:", first, second, err)
 			assert.Equal(t, test.first, first, "first")
 			assert.Equal(t, test.second, second, "second")
 			assert.Equal(t, test.err, err)

@@ -82,35 +82,38 @@ func TestPropReadWritesBounded(t *testing.T) {
 			b := ringio.New(cap, false)
 
 			for i := uint(0); i < times; i++ {
+				tooLong := uint(len(input)) > cap
 				n, err := b.Write(input)
+
+				if tooLong {
+					if n != 0 {
+						return gopter.NewPropResult(false,
+							fmt.Sprintf("should not have written, but: %d", n))
+					}
+				}
 
 				output := make([]byte, len(input))
 				n, err = b.Read(output)
-				if err != nil {
+				if !tooLong && err != nil {
 					res := gopter.NewPropResult(false, "reading")
 					res.Error = err
 					return res
 				}
-				if cap >= uint(len(input)) {
-					if n != len(input) {
-						return gopter.NewPropResult(false,
-							fmt.Sprintf("wrong read length %d!=%d", n, len(input)))
-					}
-					if !reflect.DeepEqual(output, input) {
-						return gopter.NewPropResult(false,
-							fmt.Sprintf("buffers are not equal: %#v %#v", input, output))
-					}
-				} else {
-					if uint(n) != cap {
-						return gopter.NewPropResult(false,
-							fmt.Sprintf("wrong read length %d!=%d", n, cap))
-					}
+				if tooLong && n != 0 {
+					return gopter.NewPropResult(false,
+						fmt.Sprintf("should not have read, but: %d", n))
+				}
 
-					writtenInput := input[0:n]
-					if !reflect.DeepEqual(output[0:n], writtenInput) {
-						return gopter.NewPropResult(false,
-							fmt.Sprintf("buffers are not equal: %#v %#v", output, writtenInput))
-					}
+				if tooLong {
+					return gopter.NewPropResult(true, "write too long")
+				}
+				if n != len(input) {
+					return gopter.NewPropResult(false,
+						fmt.Sprintf("wrong read length %d!=%d", n, len(input)))
+				}
+				if !reflect.DeepEqual(output, input) {
+					return gopter.NewPropResult(false,
+						fmt.Sprintf("buffers are not equal: %#v %#v", input, output))
 				}
 			}
 
