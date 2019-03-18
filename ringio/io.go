@@ -59,10 +59,7 @@ func (b *Bounded) Write(p []byte) (n int, err error) {
 		}
 		reserve = uint(len(p))
 	}
-	first, second, err := b.r.PushN(reserve)
-	if err != nil {
-		return 0, err
-	}
+	first, second, _ := b.r.PushN(reserve)
 	copy(b.buf[first.Start:first.End], p[0:first.Length()])
 	copy(b.buf[second.Start:second.End], p[first.Length():len(p)])
 	return
