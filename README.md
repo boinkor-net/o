@@ -13,6 +13,7 @@ nice properties:
 * It allows multiple modes of usage for different ring buffer usage
   scenarios.
 * It does not require casting from `interface{}`.
+* The code is pretty well-covered by conventional and property tests.
 
 ## Minimum functionality - what do you get?
 
