@@ -75,6 +75,12 @@ func (r Ring) Empty() bool {
 // ForcePush forces a new element onto the ring, discarding the oldest
 // element if the ring is full. It returns the index of the inserted
 // element.
+//
+// Using ForcePush to insert into the Ring means the Ring will lose
+// data that has not been consumed yet. This is fine under some
+// circumstances, but can have disastrous consequences for code that
+// expects to read consistent data. It is generally safer to use .Push
+// and handle ErrFull explicitly.
 func (r Ring) ForcePush() uint {
 	if r.full() {
 		_, _ = r.Shift()

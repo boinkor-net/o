@@ -102,8 +102,14 @@ func (r Ring) ShiftN(count uint) (first, second Range, err error) {
 }
 
 // Scanner implements iterating over the elements in a Ring without
-// removing them. A scanner can go in either LIFO (oldest element
-// first) or FIFO (newest element first) direction.
+// removing them. It represents a snapshot of the Ring at the time it
+// was created. A scanner can go in either LIFO (oldest element first)
+// or FIFO (newest element first) direction.
+//
+// A Scanner does not update its Ring's range validity when .Next is
+// called. Adding or reading elements from the Ring while a Scanner is
+// active can mean invalidated indexes will be returned from the
+// Scanner.
 type Scanner struct {
 	cur    uint
 	ranges []Range

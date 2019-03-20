@@ -2,7 +2,11 @@
 
 ## Added
 
-* This CHANGELOG.md file and pull request templates by [antifuchs].
+* This CHANGELOG.md file by [antifuchs].
+* A pull request template. Thanks to [wireguy] for the debugging help
+  in [#13](https://github.com/antifuchs/o/issues/13).
+* API documentation around some unsafe API interactions. Thanks,
+  [antifuchs]!
 
 # [v1.0.0] - 2019-03-19
 
@@ -27,6 +31,7 @@
 <!-- github short links to contributors' profiles: -->
 [antifuchs]: https://github.com/antifuchs
 [jsnell]: https://github.com/jsnell
+[wireguy]: https://github.com/wireguy
 
 <!-- release version number short links: -->
 [v1.0.0]: https://github.com/antifuchs/o/releases/tag/v1.0.0
