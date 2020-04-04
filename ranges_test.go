@@ -19,6 +19,7 @@ func TestLIFO(t *testing.T) {
 		{"basic5/6", o.NewRing(5), 6, []uint{1, 2, 3, 4, 0}},
 		{"mask4/13", o.NewRing(4), 13, []uint{1, 2, 3, 0}},
 		{"mask4/6", o.NewRing(4), 6, []uint{2, 3, 0, 1}},
+		{"empty", o.NewRing(4), 0, []uint{}},
 	}
 	for _, elt := range tests {
 		test := elt
@@ -50,6 +51,7 @@ func TestFIFO(t *testing.T) {
 		{"basic5/6", o.NewRing(5), 6, []uint{0, 4, 3, 2, 1}},
 		{"mask4/13", o.NewRing(4), 13, []uint{0, 3, 2, 1}},
 		{"mask4/6", o.NewRing(4), 6, []uint{1, 0, 3, 2}},
+		{"empty", o.NewRing(4), 0, []uint{}},
 	}
 	for _, elt := range tests {
 		test := elt

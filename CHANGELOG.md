@@ -7,6 +7,8 @@
   in [#13](https://github.com/antifuchs/o/issues/13).
 * API documentation around some unsafe API interactions. Thanks,
   [antifuchs]!
+* This repo now is a go module and lists all the things needed to
+  build and test it.
 
 # [v1.0.0] - 2019-03-19
 

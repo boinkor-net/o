@@ -4,32 +4,21 @@ orbs:
 jobs:
   lints:
     docker:
-      - image: circleci/golang:1.12
+      - image: circleci/golang:1.14
     working_directory: /go/src/github.com/antifuchs/o
     steps:
       - checkout
-      - run:
-          name: deps
-          command: |
-            go get -v -t -d ./...
-            # golangci-lint:
-            env GO111MODULE=on go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.15.0
       - run:
           name: golangci-lint
           command: |
-            golangci-lint run -E goimports
+            go run github.com/golangci/golangci-lint/cmd/golangci-lint run -E goimports
 
   tests:
     docker:
-      - image: circleci/golang:1.12
+      - image: circleci/golang:1.14
     working_directory: /go/src/github.com/antifuchs/o
     steps:
       - checkout
-      - run:
-          name: deps
-          command: |
-            go get -v -t -d ./...
-            go get -v github.com/wadey/gocovmerge
       - run:
           name: "Create a temp directory for artifacts"
           command: |
@@ -46,7 +35,7 @@ jobs:
       - run:
           name: "Merge coverage"
           command: |
-            gocovmerge /tmp/coverage/* > /tmp/coverage.txt
+            go run github.com/wadey/gocovmerge /tmp/coverage/* > /tmp/coverage.txt
             go tool cover -html=/tmp/coverage.txt -o /tmp/artifacts/coverage.html
       - store_artifacts:
           path: /tmp/artifacts
@@ -57,19 +46,10 @@ jobs:
 
   benchmarks:
     docker:
-      - image: circleci/golang:1.12
+      - image: circleci/golang:1.14
     working_directory: /go/src/github.com/antifuchs/o
     steps:
       - checkout
-      - run:
-          name: gofmt
-          command: |
-            gofmt -w .
-      - run:
-          name: deps
-          command: |
-            go get -v -t -d ./...
-            go get github.com/cespare/prettybench
       - run:
           name: Run benchmarks
           command: |
@@ -78,7 +58,7 @@ jobs:
           name: prettybench
           command: |
             mkdir -p /tmp/artifacts
-            prettybench < /tmp/benchmarks.txt | tee /tmp/artifacts/benchmarks.txt
+            go run github.com/cespare/prettybench < /tmp/benchmarks.txt | tee /tmp/artifacts/benchmarks.txt
       - store_artifacts:
           path: /tmp/artifacts
           destination: /
