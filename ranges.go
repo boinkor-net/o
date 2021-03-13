@@ -39,7 +39,7 @@ func (r Ring) Inspect() (first Range, second Range) {
 	first.Start = r.start()
 	end1 := r.end()
 
-	first.End = end1 + 1
+	first.End = end1
 	if end1 <= first.Start {
 		second.End = end1
 		first.End = r.capacity()
