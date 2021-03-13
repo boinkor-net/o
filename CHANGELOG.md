@@ -1,4 +1,4 @@
-# [v1.1.0] - Unreleased
+# [v1.1.0] - 2021-03-13
 
 ## Added
 
@@ -45,4 +45,5 @@
 [wireguy]: https://github.com/wireguy
 
 <!-- release version number short links: -->
+[v1.1.0]: https://github.com/antifuchs/o/releases/tag/v1.1.0
 [v1.0.0]: https://github.com/antifuchs/o/releases/tag/v1.0.0
