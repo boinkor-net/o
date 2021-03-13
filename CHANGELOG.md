@@ -10,6 +10,14 @@
 * This repo now is a go module and lists all the things needed to
   build and test it.
 
+## Fixed
+
+* The order of traversal in ScanFIFO and ScanLIFO was inverted and had
+  an [off-by-one error to
+  boot](https://github.com/antifuchs/o/issues/22) - now, each
+  traversal goes the correct way around and stops when it returned the
+  last occupied position. Thanks for the report, [andrew-d]!
+
 # [v1.0.0] - 2019-03-19
 
 ## Added
@@ -31,6 +39,7 @@
   report, [jsnell]!
 
 <!-- github short links to contributors' profiles: -->
+[andrew-d]: https://github.com/andrew-d
 [antifuchs]: https://github.com/antifuchs
 [jsnell]: https://github.com/jsnell
 [wireguy]: https://github.com/wireguy
