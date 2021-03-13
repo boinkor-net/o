@@ -286,3 +286,37 @@ func TestShiftN(t *testing.T) {
 		})
 	}
 }
+
+func TestBadTraversalPanics(t *testing.T) {
+	t.Parallel()
+	r := o.NewRing(20)
+	r.ForcePush()
+
+	// Attempt a bad traversal:
+	assert.Panics(t, func() {
+		scanner := o.ScanFIFO(r)
+		scanner.Value()
+	})
+	assert.Panics(t, func() {
+		scanner := o.ScanLIFO(r)
+		scanner.Value()
+	})
+}
+
+func TestNextIsAlwaysSafe(t *testing.T) {
+	t.Parallel()
+	r := o.NewRing(20)
+	r.ForcePush()
+
+	fifo := o.ScanFIFO(r)
+	assert.True(t, fifo.Next())
+
+	lifo := o.ScanLIFO(r)
+	assert.True(t, lifo.Next())
+
+	assert.False(t, fifo.Next())
+	assert.False(t, fifo.Next())
+
+	assert.False(t, lifo.Next())
+	assert.False(t, lifo.Next())
+}
