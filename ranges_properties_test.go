@@ -45,15 +45,15 @@ func TestPropFIFOandLIFOMatch(t *testing.T) {
 				return ""
 			}
 
-			last := lifo[0]
-			for nth := range lifo {
-				if lifo[nth] != fifo[len(fifo)-1-nth] {
-					return fmt.Sprintf("fifo / lifo mismatch:\n%#v\n%#v", lifo, fifo)
+			last := fifo[0]
+			for nth := range fifo {
+				if fifo[nth] != lifo[len(lifo)-1-nth] {
+					return fmt.Sprintf("lifo / fifo mismatch:\n%#v\n%#v", fifo, lifo)
 				}
-				if nth > 0 && ring.Mask(last+1) != lifo[nth] {
-					return fmt.Sprintf("indexes not continuous: %#v", lifo)
+				if nth > 0 && ring.Mask(last+1) != fifo[nth] {
+					return fmt.Sprintf("indexes not continuous: %#v", fifo)
 				}
-				last = lifo[nth]
+				last = fifo[nth]
 			}
 			return ""
 		},
