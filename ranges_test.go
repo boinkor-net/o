@@ -15,10 +15,13 @@ func TestLIFO(t *testing.T) {
 		cycles   uint
 		expected []uint
 	}{
-		{"basic5/13", o.NewRing(5), 13, []uint{3, 4, 0, 1, 2}},
-		{"basic5/6", o.NewRing(5), 6, []uint{1, 2, 3, 4, 0}},
-		{"mask4/13", o.NewRing(4), 13, []uint{1, 2, 3, 0}},
-		{"mask4/6", o.NewRing(4), 6, []uint{2, 3, 0, 1}},
+		{"basic5/1", o.NewRing(5), 1, []uint{0}},
+		{"basic5/3", o.NewRing(5), 3, []uint{2, 1, 0}},
+		{"basic5/13", o.NewRing(5), 13, []uint{2, 1, 0, 4, 3}},
+		{"basic5/6", o.NewRing(5), 6, []uint{0, 4, 3, 2, 1}},
+		{"mask4/3", o.NewRing(4), 3, []uint{2, 1, 0}},
+		{"mask4/13", o.NewRing(4), 13, []uint{0, 3, 2, 1}},
+		{"mask4/6", o.NewRing(4), 6, []uint{1, 0, 3, 2}},
 		{"empty", o.NewRing(4), 0, []uint{}},
 	}
 	for _, elt := range tests {
@@ -47,10 +50,13 @@ func TestFIFO(t *testing.T) {
 		cycles   uint
 		expected []uint
 	}{
-		{"basic5/13", o.NewRing(5), 13, []uint{2, 1, 0, 4, 3}},
-		{"basic5/6", o.NewRing(5), 6, []uint{0, 4, 3, 2, 1}},
-		{"mask4/13", o.NewRing(4), 13, []uint{0, 3, 2, 1}},
-		{"mask4/6", o.NewRing(4), 6, []uint{1, 0, 3, 2}},
+		{"basic5/1", o.NewRing(5), 1, []uint{0}},
+		{"basic5/3", o.NewRing(5), 3, []uint{0, 1, 2}},
+		{"basic5/13", o.NewRing(5), 13, []uint{3, 4, 0, 1, 2}},
+		{"basic5/6", o.NewRing(5), 6, []uint{1, 2, 3, 4, 0}},
+		{"mask4/3", o.NewRing(4), 3, []uint{0, 1, 2}},
+		{"mask4/13", o.NewRing(4), 13, []uint{1, 2, 3, 0}},
+		{"mask4/6", o.NewRing(4), 6, []uint{2, 3, 0, 1}},
 		{"empty", o.NewRing(4), 0, []uint{}},
 	}
 	for _, elt := range tests {
@@ -81,11 +87,12 @@ func TestInspect(t *testing.T) {
 	}{
 		{"basic5/13", o.NewRing(5), 13, o.Range{3, 5}, o.Range{0, 3}},
 		{"basic5/6", o.NewRing(5), 6, o.Range{1, 5}, o.Range{0, 1}},
-		{"basic5/4", o.NewRing(5), 4, o.Range{0, 5}, o.Range{0, 0}},
+		{"basic5/4", o.NewRing(5), 4, o.Range{0, 4}, o.Range{0, 0}},
 		{"basic5/0", o.NewRing(5), 0, o.Range{0, 0}, o.Range{0, 0}},
 		{"mask4/13", o.NewRing(4), 13, o.Range{1, 4}, o.Range{0, 1}},
 		{"mask4/6", o.NewRing(4), 6, o.Range{2, 4}, o.Range{0, 2}},
 		{"mask4/4", o.NewRing(4), 4, o.Range{0, 4}, o.Range{0, 0}},
+		{"mask4/2", o.NewRing(4), 2, o.Range{0, 2}, o.Range{0, 0}},
 		{"mask4/0", o.NewRing(4), 0, o.Range{0, 0}, o.Range{0, 0}},
 	}
 	for _, elt := range tests {
@@ -98,7 +105,6 @@ func TestInspect(t *testing.T) {
 			}
 			before := test.ra.Size()
 			first, second := test.ra.Inspect()
-			t.Logf("%#v", test.ra)
 			assert.Equal(t, test.first, first, "first")
 			assert.Equal(t, test.second, second, "second")
 			assert.Equal(t, before, test.ra.Size())
@@ -116,7 +122,7 @@ func TestConsume(t *testing.T) {
 	}{
 		{"basic5/13", o.NewRing(5), 13, o.Range{3, 5}, o.Range{0, 3}},
 		{"basic5/6", o.NewRing(5), 6, o.Range{1, 5}, o.Range{0, 1}},
-		{"basic5/4", o.NewRing(5), 4, o.Range{0, 5}, o.Range{0, 0}},
+		{"basic5/4", o.NewRing(5), 4, o.Range{0, 4}, o.Range{0, 0}},
 		{"basic5/0", o.NewRing(5), 0, o.Range{0, 0}, o.Range{0, 0}},
 		{"mask4/13", o.NewRing(4), 13, o.Range{1, 4}, o.Range{0, 1}},
 		{"mask4/6", o.NewRing(4), 6, o.Range{2, 4}, o.Range{0, 2}},
@@ -132,7 +138,6 @@ func TestConsume(t *testing.T) {
 				test.ra.ForcePush()
 			}
 			first, second := test.ra.Consume()
-			t.Logf("%#v", test.ra)
 			assert.Equal(t, test.first, first, "first")
 			assert.Equal(t, test.second, second, "second")
 			assert.Equal(t, uint(0), test.ra.Size())
@@ -280,4 +285,38 @@ func TestShiftN(t *testing.T) {
 			assert.Equal(t, test.second, second, "second")
 		})
 	}
+}
+
+func TestBadTraversalPanics(t *testing.T) {
+	t.Parallel()
+	r := o.NewRing(20)
+	r.ForcePush()
+
+	// Attempt a bad traversal:
+	assert.Panics(t, func() {
+		scanner := o.ScanFIFO(r)
+		scanner.Value()
+	})
+	assert.Panics(t, func() {
+		scanner := o.ScanLIFO(r)
+		scanner.Value()
+	})
+}
+
+func TestNextIsAlwaysSafe(t *testing.T) {
+	t.Parallel()
+	r := o.NewRing(20)
+	r.ForcePush()
+
+	fifo := o.ScanFIFO(r)
+	assert.True(t, fifo.Next())
+
+	lifo := o.ScanLIFO(r)
+	assert.True(t, lifo.Next())
+
+	assert.False(t, fifo.Next())
+	assert.False(t, fifo.Next())
+
+	assert.False(t, lifo.Next())
+	assert.False(t, lifo.Next())
 }

@@ -13,11 +13,11 @@ func ExampleScanFIFO() {
 		ring.ForcePush()
 	}
 
-	// Now find all the indexes in last-in/first-out order:
+	// Now find all the indexes in first-in/first-out order:
 	s := o.ScanFIFO(ring)
 	for s.Next() {
 		fmt.Print(s.Value(), " ")
 	}
 	// Output:
-	// 1 0 16 15 14 13 12 11 10 9 8 7 6 5 4 3 2
+	// 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 0 1
 }

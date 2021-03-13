@@ -39,7 +39,8 @@ type ringBackend interface {
 	// start returns the index of first element that can be read.
 	start() uint
 
-	// end returns the index of the last element that can be read.
+	// end returns the index after the last element that can be
+	// read. It is compatible with go [:] slice expressions.
 	end() uint
 
 	capacity() uint

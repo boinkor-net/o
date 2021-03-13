@@ -39,7 +39,7 @@ func (r Ring) Inspect() (first Range, second Range) {
 	first.Start = r.start()
 	end1 := r.end()
 
-	first.End = end1 + 1
+	first.End = end1
 	if end1 <= first.Start {
 		second.End = end1
 		first.End = r.capacity()
@@ -101,60 +101,126 @@ func (r Ring) ShiftN(count uint) (first, second Range, err error) {
 	return
 }
 
-// Scanner implements iterating over the elements in a Ring without
-// removing them. It represents a snapshot of the Ring at the time it
-// was created. A scanner can go in either LIFO (oldest element first)
-// or FIFO (newest element first) direction.
+// indexes is a representation of walking on a Range. It has a first
+// index and a last index that is valid, and a direction in which to
+// traverse the Range.
+//
+// Note that "first" and "last" are both inclusive here: In contrast
+// to a Range(and Ring)'s idea of Start / End (which is a half-open
+// interval), this holds the first and last valid index in the range.
+//
+// An indexes struct tightens as you traverse it, and it always
+// tightens from the beginning: The direction field gets added to
+// first, and once first == last, the index traversal is complete and
+// no more indexes will be produced.
+type indexes struct {
+	first, last uint
+	direction   int
+}
+
+func (r Range) toFIFOTraversal() *indexes {
+	if r.Empty() {
+		return nil
+	}
+	return &indexes{
+		direction: +1,
+		first:     r.Start,
+		last:      r.End - 1,
+	}
+}
+
+func (r Range) toLIFOTraversal() *indexes {
+	if r.Empty() {
+		return nil
+	}
+	return &indexes{
+		direction: -1,
+		first:     r.End - 1,
+		last:      r.Start,
+	}
+}
+
+func (i *indexes) hasNext() bool {
+	return i != nil && int(i.first)*i.direction <= int(i.last)*i.direction
+}
+
+func (i *indexes) next() uint {
+	cur := i.first
+	i.first += uint(i.direction)
+	return cur
+}
+
+// Scanner implements iterating over the elements in a Ring
+// without removing them. It represents a snapshot of the Ring at the
+// time it was created.
 //
 // A Scanner does not update its Ring's range validity when .Next is
 // called. Adding or reading elements from the Ring while a Scanner is
 // active can mean invalidated indexes will be returned from the
 // Scanner.
 type Scanner struct {
-	cur    uint
-	ranges []Range
-	fifo   bool
-}
-
-// ScanLIFO returns a Scanner for the given Ring that iterates over
-// the occupied indexes in LIFO (oldest to newest) direction.
-func ScanLIFO(ring Ring) *Scanner {
-	first, second := ring.Inspect()
-	return &Scanner{first.Start, []Range{first, second}, false}
+	pos     *uint
+	current *indexes
+	second  *indexes
 }
 
 // ScanFIFO returns a Scanner for the given Ring that iterates over
 // the occupied indexes in FIFO (newest to oldest) direction.
 func ScanFIFO(ring Ring) *Scanner {
 	first, second := ring.Inspect()
-	return &Scanner{second.End, []Range{second, first}, true}
+	return &Scanner{
+		current: first.toFIFOTraversal(),
+		second:  second.toFIFOTraversal(),
+	}
 }
 
-// Next advances the Scanner to the next available element. If no next
-// element is available, it returns false.
+// ScanLIFO returns a Scanner for the given Ring that iterates over
+// the occupied indexes in LIFO (newest to oldest, think of a stack)
+// direction.
+func ScanLIFO(ring Ring) *Scanner {
+	first, second := ring.Inspect()
+	return &Scanner{
+		current: second.toLIFOTraversal(),
+		second:  first.toLIFOTraversal(),
+	}
+}
+
+// Next advances the Scanner in the traversal direction (forward in
+// FIFO direction, backward in LIFO), returning a boolean indicating
+// whether there *is* a next position in the ring.
+//
+// It is safe to call Next after reaching the last position - in that
+// case, it will always return a negative result.
 func (s *Scanner) Next() bool {
-	rg := &s.ranges[0]
-	if rg.Empty() {
-		s.ranges = s.ranges[1:]
-		if len(s.ranges) == 0 {
-			return false
-		}
-		rg = &s.ranges[0]
-		if rg.Empty() {
-			return false
-		}
+	s.pos = nil
+	ok := s.current.hasNext()
+	if ok {
+		pos := s.current.next()
+		s.pos = &pos
+		return true
 	}
-	if s.fifo {
-		s.cur = rg.End - 1
-		rg.End--
-	} else {
-		s.cur = rg.Start
-		rg.Start++
+	// We've exhausted one pool of indexes, pick the next one (or
+	// none, there may be no next one):
+	s.current = s.second
+	ok = s.current.hasNext()
+	if !ok {
+		return false
 	}
+	pos := s.current.next()
+	s.pos = &pos
 	return true
 }
 
-// Value returns the index value of the Scanner's current position.
+// Value returns the next position in the traversal of a Ring's
+// occupied positions, in the given order, after Next() returned a
+// positive value.
+//
+// If Value is called before the first call to Next, or after Next
+// returned a result indicating there are no more positions, Value
+// panics,
 func (s *Scanner) Value() uint {
-	return s.cur
+	if s.pos == nil {
+		panic("Value called when we know about no valid positions.")
+	}
+	return *s.pos
 }
