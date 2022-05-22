@@ -4,7 +4,7 @@ orbs:
 jobs:
   lints:
     docker:
-      - image: circleci/golang:1.14
+      - image: circleci/golang:1.17
     working_directory: /go/src/github.com/antifuchs/o
     steps:
       - checkout
@@ -15,7 +15,7 @@ jobs:
 
   tests:
     docker:
-      - image: circleci/golang:1.14
+      - image: circleci/golang:1.17
     working_directory: /go/src/github.com/antifuchs/o
     steps:
       - checkout
@@ -46,7 +46,7 @@ jobs:
 
   benchmarks:
     docker:
-      - image: circleci/golang:1.14
+      - image: circleci/golang:1.17
     working_directory: /go/src/github.com/antifuchs/o
     steps:
       - checkout
