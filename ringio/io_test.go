@@ -117,6 +117,11 @@ func TestBytes(t *testing.T) {
 	read := make([]byte, 4)
 	n, err = b.Read(read)
 	assert.NoError(t, err)
+	assert.Equal(t, 4, n)
+
+	b.Reset()
+	n, err = b.Read(read)
+	assert.NoError(t, err)
 	assert.Equal(t, 0, n)
 }
 
@@ -129,6 +134,11 @@ func TestString(t *testing.T) {
 
 	assert.Equal(t, "test", b.String())
 	read := make([]byte, 4)
+	n, err = b.Read(read)
+	assert.NoError(t, err)
+	assert.Equal(t, 4, n)
+
+	b.Reset()
 	n, err = b.Read(read)
 	assert.NoError(t, err)
 	assert.Equal(t, 0, n)

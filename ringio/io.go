@@ -100,7 +100,7 @@ func (b *Bounded) Bytes() []byte {
 	b.Lock()
 	defer b.Unlock()
 
-	first, second := b.r.Consume()
+	first, second := b.r.Inspect()
 	val := make([]byte, first.Length()+second.Length())
 	copy(val, b.buf[first.Start:first.End])
 	copy(val[first.End:], b.buf[second.Start:second.End])
