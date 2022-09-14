@@ -1,6 +1,7 @@
 package ringio
 
 import (
+	"io"
 	"testing"
 
 	"github.com/antifuchs/o"
@@ -67,10 +68,11 @@ func TestParallel(t *testing.T) {
 	for i := 0; i < 1000; i++ {
 		didRead := make([]byte, 6)
 		n, err := b.Read(didRead)
-		if err == o.ErrEmpty {
-			continue
+		if n == 0 {
+			require.ErrorIs(t, err, io.EOF)
+		} else if err != nil {
+			t.Error(err)
 		}
-		require.NoError(t, err)
 		switch n {
 		case 3:
 			assert.Equal(t, []byte("abc"), didRead[0:3])
@@ -102,7 +104,7 @@ func TestReset(t *testing.T) {
 	b.Reset()
 
 	n, err = b.Read(read)
-	assert.NoError(t, err)
+	require.ErrorIs(t, err, io.EOF)
 	assert.Equal(t, 0, n)
 }
 
@@ -121,7 +123,7 @@ func TestBytes(t *testing.T) {
 
 	b.Reset()
 	n, err = b.Read(read)
-	assert.NoError(t, err)
+	require.ErrorIs(t, err, io.EOF)
 	assert.Equal(t, 0, n)
 }
 
@@ -140,7 +142,7 @@ func TestString(t *testing.T) {
 
 	b.Reset()
 	n, err = b.Read(read)
-	assert.NoError(t, err)
+	require.ErrorIs(t, err, io.EOF)
 	assert.Equal(t, 0, n)
 }
 
@@ -150,4 +152,43 @@ func TestZero(t *testing.T) {
 	n, err := b.Write([]byte("welp"))
 	assert.Equal(t, o.ErrFull, err)
 	assert.Equal(t, 0, n)
+}
+
+func TestBounded_overflow(t *testing.T) {
+	t.Parallel()
+	w := New(10, true)
+	for i := 0; i < 50; i++ {
+		for j := 0; j < 3; j++ {
+			if n, err := w.Write([]byte("hello\n")); err != nil || n != 6 {
+				t.Fatal(n, err)
+			}
+		}
+		if v := string(w.Bytes()); v != "llo\nhello\n" {
+			t.Errorf("unexpected value: %q\n%s", v, v)
+		}
+		if v := w.String(); v != "llo\nhello\n" {
+			t.Errorf("unexpected value: %q\n%s", v, v)
+		}
+	}
+	w.Reset()
+	if v := string(w.Bytes()); v != "" {
+		t.Errorf("unexpected value: %q\n%s", v, v)
+	}
+}
+
+func TestBounded_oversizeWrite(t *testing.T) {
+	t.Parallel()
+	w := New(10, true)
+	if n, err := w.Write([]byte("hello world")); err != nil || n != 11 {
+		t.Fatal(n, err)
+	}
+	if v := string(w.Bytes()); v != "ello world" {
+		t.Errorf("unexpected value: %q\n%s", v, v)
+	}
+	if v := w.String(); v != "ello world" {
+		t.Errorf("unexpected value: %q\n%s", v, v)
+	}
+	if b, err := io.ReadAll(w); err != nil || string(b) != "ello world" {
+		t.Error(b, err)
+	}
 }

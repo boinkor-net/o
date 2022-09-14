@@ -19,7 +19,10 @@ func (r Range) Empty() bool {
 
 // Length returns the number of elements in the range.
 func (r Range) Length() uint {
-	return r.End - r.Start
+	if r.End > r.Start {
+		return r.End - r.Start
+	}
+	return 0
 }
 
 // Inspect returns a set of indexes that represent the bounds of the
@@ -84,7 +87,7 @@ func (r Ring) PushN(count uint) (first, second Range, err error) {
 // returns ranges covering the indexes that were removed.
 //
 // If the Ring holds only fewer elements as requested, ShiftN reads
-// nothing and returns ErrFull; the ranges returned in this case are
+// nothing and returns ErrEmpty; the ranges returned in this case are
 // meaningless and have zero length.
 func (r Ring) ShiftN(count uint) (first, second Range, err error) {
 	if count == 0 {
