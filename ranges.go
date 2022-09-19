@@ -19,10 +19,10 @@ func (r Range) Empty() bool {
 
 // Length returns the number of elements in the range.
 func (r Range) Length() uint {
-	if r.End > r.Start {
-		return r.End - r.Start
+	if r.End <= r.Start {
+		return 0
 	}
-	return 0
+	return r.End - r.Start
 }
 
 // Inspect returns a set of indexes that represent the bounds of the
