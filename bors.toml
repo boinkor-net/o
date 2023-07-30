@@ -2,8 +2,9 @@
 # https://app.bors.tech/repositories so bors can see the new repo!
 
 status = [
-  "ci/circleci: ci_success",
-  "codecov/project",
+  "lint",
+  "test",
+  "build",
 ]
 timeout_sec = 300
 delete_merged_branches = true
