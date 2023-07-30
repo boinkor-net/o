@@ -3,7 +3,7 @@ module github.com/antifuchs/o
 go 1.14
 
 require (
-	github.com/cespare/prettybench v0.0.0-20150116022406-03b8cfe5406c
+	github.com/cespare/prettybench v0.1.0
 	github.com/kr/text v0.2.0 // indirect
 	github.com/leanovate/gopter v0.2.9
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
