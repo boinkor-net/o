@@ -5,6 +5,7 @@ status = [
   "lint",
   "test",
   "build",
+  "coverage",
 ]
 timeout_sec = 300
 delete_merged_branches = true
