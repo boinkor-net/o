@@ -5,5 +5,4 @@ package tools
 
 import (
 	_ "github.com/cespare/prettybench"
-	_ "github.com/wadey/gocovmerge"
 )
