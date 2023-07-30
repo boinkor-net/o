@@ -22,3 +22,5 @@ jobs:
         with:
           github_token: ${{ steps.generate_token.outputs.BOT_TOKEN }}
           labels: combined-prs
+          min_combine_number: 3
+          title: "Combined dependabot PRs"
