@@ -38,7 +38,7 @@ func (z zeroRing) capacity() uint {
 
 func (z zeroRing) reset() {}
 
-func (z zeroRing) pushN(n uint) (start uint, end uint, err error) {
+func (z zeroRing) pushN(_ uint) (start uint, end uint, err error) {
 	return 0, 0, ErrFull
 }
 
