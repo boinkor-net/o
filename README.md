@@ -1,5 +1,5 @@
 # o - go ring buffers for arbitrary types without `interface{}`
-[![godoc](https://godoc.org/github.com/antifuchs/o?status.svg)](http://godoc.org/github.com/antifuchs/o) [![CircleCI](https://circleci.com/gh/antifuchs/o.svg?style=svg)](https://circleci.com/gh/antifuchs/o) [![codecov](https://codecov.io/gh/antifuchs/o/branch/master/graph/badge.svg)](https://codecov.io/gh/antifuchs/o)
+[![godoc](https://godoc.org/github.com/boinkor-net/o?status.svg)](https://godoc.org/github.com/boinkor-net/o) [![CI](https://github.com/boinkor-net/o/actions/workflows/ci.yml/badge.svg)](https://github.com/boinkor-net/o/actions/workflows/ci.yml) [![codecov](https://codecov.io/gh/antifuchs/o/branch/master/graph/badge.svg)](https://codecov.io/gh/boinkor-net/o)
 
 
 This package provides the data structures that you need in order to
