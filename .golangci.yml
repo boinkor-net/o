@@ -8,7 +8,7 @@ linters-settings:
 
 linters:
   enable:
-    - golint
+    - revive
     - gochecknoglobals
 
 issues:
