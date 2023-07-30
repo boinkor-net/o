@@ -40,11 +40,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-
-      - name: Set up Go
-        uses: actions/setup-go@v4
+      - uses: actions/setup-go@v4
         with:
+          cache: false
           go-version: "1.20"
-
-      - name: Build
-        run: go run github.com/golangci/golangci-lint/cmd/golangci-lint run -E goimports
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          args: "--timeout=3m"
+          only-new-issues: true
+          version: "v1.53.3"
