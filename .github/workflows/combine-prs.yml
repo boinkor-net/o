@@ -14,7 +14,7 @@ jobs:
         uses: wow-actions/use-app-token@d7957e08172ca2e8e49b35b8d266ad585885edc7 # pin@v2.0.2
         id: generate_token
         with:
-          app_id: ${{ env.COMBINE_PRS_APP_ID }} # The ID of the GitHub App
+          app_id: ${{ vars.COMBINE_PRS_APP_ID }} # The ID of the GitHub App
           private_key: ${{ secrets.COMBINE_PRS_PRIVATE_KEY }} # The private key of the GitHub App
 
       - name: combine-prs
