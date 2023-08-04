@@ -1,10 +1,6 @@
 name: Tests
 
 on:
-  push:
-    branches: ["master", "staging"]
-  pull_request:
-    branches: ["master"]
   workflow_call:
 
 jobs:
@@ -33,21 +29,6 @@ jobs:
 
       - name: Build
         run: go build -v ./...
-
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-go@v4
-        with:
-          cache: false
-          go-version: "1.20"
-      - name: golangci-lint
-        uses: golangci/golangci-lint-action@v3
-        with:
-          args: "--timeout=3m"
-          only-new-issues: true
-          version: "v1.53.3"
 
   coverage:
     runs-on: ubuntu-latest
