@@ -1,0 +1,62 @@
+name: Tests
+
+on:
+  push:
+    branches: ["master", "staging"]
+  pull_request:
+    branches: ["master"]
+  workflow_call:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.20"
+
+      - name: Test
+        run: go test -v ./...
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.20"
+
+      - name: Build
+        run: go build -v ./...
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v4
+        with:
+          cache: false
+          go-version: "1.20"
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          args: "--timeout=3m"
+          only-new-issues: true
+          version: "v1.53.3"
+
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v4
+        with:
+          go-version: "1.20"
+      - name: Run coverage
+        run: go test -race -coverprofile=coverage.txt -covermode=atomic ./...
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
