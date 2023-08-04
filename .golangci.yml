@@ -1,20 +1,18 @@
 run:
-  deadline: "20s"
-  issues-exit-code: 1
-
-linters-settings:
-  errcheck:
-    check-blank: false
+  concurrency: 4
+  timeout: 3m
+  tests: false
 
 linters:
-  enable:
-    - revive
-    - gochecknoglobals
-
-issues:
-  exclude-use-default: false
-  exclude-rules:
-    # Exclude errcheck from running on tests files.
-    - path: _test\.go
-      linters:
-        - errcheck
+  presets:
+    - bugs
+    - comment
+    - error
+    - import
+    - metalinter
+    - module
+    - performance
+    - sql
+    - unused
+  disable:
+    - depguard
