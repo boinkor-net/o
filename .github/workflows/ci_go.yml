@@ -13,12 +13,4 @@ jobs:
     with:
       go_version: "1.20"
 
-  go_build:
-    uses: "boinkor-net/ci-baseline-go/.github/workflows/ci_baseline_go_build.yml@main"
-    strategy:
-      matrix:
-        build_target: []
-    with:
-      subdir: ${{matrix.build_target}}
-      go_version: "1.20"
 
