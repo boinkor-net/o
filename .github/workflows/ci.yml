@@ -7,13 +7,13 @@
     "steps":
     - "name": "Immediate success for improved visibility on github merge queue"
       "run": "true"
-  "go":
+  "ci_go":
     "secrets": "inherit"
     "uses": "./.github/workflows/ci_go.yml"
   "overall_ci":
     "if": "always()"
     "needs":
-    - "go"
+    - "ci_go"
     - "tests"
     "permissions":
       "actions": "read"
