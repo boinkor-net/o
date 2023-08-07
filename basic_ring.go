@@ -46,7 +46,6 @@ func (r *basicRing) shiftN(n uint) (uint, uint, error) {
 		return start, start, ErrEmpty
 	}
 	r.length -= n
-	//i := r.read
 	r.read = r.mask(r.read + n)
 	return start, r.read, nil
 }

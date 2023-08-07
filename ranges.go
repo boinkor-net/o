@@ -6,7 +6,7 @@ package o
 //
 // They can be used in go slice bounds like so:
 //
-//     [range.Start:range.End]
+//	[range.Start:range.End]
 type Range struct {
 	Start uint // The first element of the range
 	End   uint // The first element that is not part of the range.
@@ -28,7 +28,7 @@ func (r Range) Length() uint {
 // Inspect returns a set of indexes that represent the bounds of the
 // elements occupied in the ring.
 //
-// Returned indexes
+// # Returned indexes
 //
 // Since a ring buffer consists of indexes that might wrap around to
 // zero, callers of Inspect must use all returned Ranges to get an
@@ -220,7 +220,7 @@ func (s *Scanner) Next() bool {
 //
 // If Value is called before the first call to Next, or after Next
 // returned a result indicating there are no more positions, Value
-// panics,
+// panics.
 func (s *Scanner) Value() uint {
 	if s.pos == nil {
 		panic("Value called when we know about no valid positions.")
