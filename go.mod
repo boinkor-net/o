@@ -3,7 +3,7 @@ module github.com/antifuchs/o
 go 1.20
 
 require (
-	github.com/leanovate/gopter v0.2.9
+	github.com/leanovate/gopter v0.2.10
 	github.com/stretchr/testify v1.9.0
 )
 
