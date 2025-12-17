@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/leanovate/gopter v0.2.11
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.11.1
 )
 
 require (
