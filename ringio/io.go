@@ -3,6 +3,7 @@
 package ringio
 
 import (
+	"io"
 	"sync"
 
 	"github.com/antifuchs/o"
@@ -45,18 +46,19 @@ func (b *Bounded) Write(p []byte) (n int, err error) {
 
 	n = len(p)
 	reserve := uint(len(p))
-	remaining := b.r.Capacity() - b.r.Size()
-	if remaining < uint(len(p)) {
+	if remaining := b.r.Capacity() - b.r.Size(); remaining < reserve {
 		if !b.overwrite {
 			return 0, o.ErrFull
 		}
 		// consume the bytes that we're over and reset input
 		// to fit:
-		p = p[reserve-b.r.Capacity():]
-		for i := uint(0); i <= b.r.Size(); i++ {
-			_, _ = b.r.Shift()
+		if capacity := b.r.Capacity(); capacity < reserve {
+			p = p[reserve-capacity:]
+			reserve = uint(len(p))
 		}
-		reserve = uint(len(p))
+		if remaining < reserve {
+			_, _, _ = b.r.ShiftN(reserve - remaining)
+		}
 	}
 	first, second, _ := b.r.PushN(reserve)
 	copy(b.buf[first.Start:first.End], p[0:first.Length()])
@@ -69,7 +71,7 @@ func (b *Bounded) Read(p []byte) (n int, err error) {
 	defer b.Unlock()
 
 	if b.r.Empty() {
-		return 0, nil
+		return 0, io.EOF
 	}
 
 	n = int(b.r.Size())
@@ -94,16 +96,24 @@ func (b *Bounded) Reset() {
 	b.reset()
 }
 
-// Bytes consumes all readable data on the ring buffer and returns a
-// newly-allocated byte slice containing all readable bytes.
+// Bytes returns a copy of all readable data on the ring buffer and
+// returns a newly-allocated byte slice containing all readable bytes.
 func (b *Bounded) Bytes() []byte {
 	b.Lock()
 	defer b.Unlock()
 
-	first, second := b.r.Consume()
-	val := make([]byte, first.Length()+second.Length())
-	copy(val, b.buf[first.Start:first.End])
-	copy(val[first.End:], b.buf[second.Start:second.End])
+	first, second := b.r.Inspect()
+	firstLen := first.Length()
+	secondLen := second.Length()
+
+	val := make([]byte, firstLen+secondLen)
+	if firstLen != 0 {
+		copy(val, b.buf[first.Start:first.End])
+	}
+	if secondLen != 0 {
+		copy(val[firstLen:], b.buf[second.Start:second.End])
+	}
+
 	return val
 }
 
